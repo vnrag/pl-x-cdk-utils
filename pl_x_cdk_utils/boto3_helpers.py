@@ -56,7 +56,7 @@ def get_cross_account_credentials(account_id, role_name,
     :param region_name: string
                         Region for the AWS account
     :return: object
-             AWS credential object
+             AWS credentials object
     """
     sts_connection = boto3.client('sts', region_name=region_name)
     role_arn = f"arn:aws:iam::{account_id}:role/{role_name}"
