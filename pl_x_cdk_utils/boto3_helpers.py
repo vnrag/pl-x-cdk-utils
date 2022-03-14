@@ -62,7 +62,7 @@ def get_cross_account_credentials(account_id, role_name,
     role_arn = f"arn:aws:iam::{account_id}:role/{role_name}"
     aws_credentials = sts_connection.assume_role(
         RoleArn=role_arn,
-        RoleSessionName="cross_acct_lambda"
+        RoleSessionName=f"cross_acct_lambda_{role_name}"
     )
     return aws_credentials
 
