@@ -1,9 +1,11 @@
 from aws_cdk import (
     Duration,
-    aws_kms as kms,
-    aws_ssm as ssm,
+    aws_glue,
     aws_iam as iam,
-    aws_lambda as _lambda
+    aws_ssm as ssm,
+    aws_events as events,
+    aws_lambda as _lambda,
+    aws_events_targets as targets,
 )
 import aws_cdk as core
 
@@ -40,7 +42,7 @@ def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
     timeout = timeout if timeout else 5
     runtime = runtime if runtime else _lambda.Runtime.PYTHON_3_8
     l_handler = _lambda.Function(
-        construct, f"{function_name}-profile",
+        construct, f"profile-for-lambda-{function_name}",
         runtime=runtime,
         code=_lambda.Code.from_asset(lambda_path),
         handler=handler,
@@ -51,6 +53,139 @@ def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
         function_name=function_name
     )
     return l_handler
+
+
+def create_glue_crawler(construct, name, db_name, role, table_prefix,
+                        targets, configuration=None, schedule=None):
+    """
+    :param construct: object
+                      Stack Scope
+    :param name: string
+                 Name for the glue-crawler
+    :param db_name: string
+                    Name for database
+    :param role: object
+                 AWS IAM role object
+    :param table_prefix: string
+                        Prefix we want to use in table
+    :param targets: list
+                    List of Key, value arguments for target,
+                    eg: [{"path": "s3://bucket/path_to_file"}]
+    :param configuration: string
+                          Additional configurations for glue-crawler
+    :param schedule: string
+                     String value for cron
+    :return: object
+             Glue-Crawler object
+    """
+    glue_crawler = aws_glue.CfnCrawler(
+        construct, f"profile-for-crawler-{name}",
+        database_name=db_name,
+        role=role,
+        table_prefix=table_prefix,
+        targets=targets,
+        name=name
+    )
+    if configuration:
+        glue_crawler.configuration = configuration
+    if schedule:
+        glue_crawler.schedule = aws_glue.CfnCrawler.ScheduleProperty(
+            schedule_expression=schedule)
+
+    return glue_crawler
+
+
+def get_added_policies_as_role(construct, role_name, principal, actions_list,
+                               resources_list=['*']):
+    """
+    :param construct: object
+                      Stack Scope
+    :param role_name: string
+                      Role name
+    :param principal: string
+                      AWS principal that will be using the role
+    :param actions_list: list
+                         List of permission actions for the role
+    :param resources_list: list
+                           List for the resources we want to give the permission
+    :return: object
+             IAM role object
+    """
+    role = iam.Role(
+        construct, f"profile-for-role-{role_name}", role_name=role_name,
+        assumed_by=iam.ServicePrincipal(principal))
+    role.add_to_policy(iam.PolicyStatement(
+        resources=resources_list,
+        actions=actions_list
+    ))
+    return role
+
+
+def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
+                   hour="6", month="*", week_day="*", year="*",
+                   event_input={}):
+    """
+    :param construct: object
+                      Stack Scope
+    :param rule_name: string
+                      Name for the rule
+    :param cdk_functionality: object
+                              CDK handler where we want to implement rule
+    :param minute: string
+                   Minute for cron
+    :param hour: string
+                Hour for cron
+    :param month: string
+                   Month for cron
+    :param week_day: string
+                   Weekday for cron
+    :param year: string
+                   Year for cron
+    :param event_input: dict
+                        Input for the execution on given rule
+    :return:
+    """
+    # Event rule for provided cron values
+    event_rule = events.Rule(construct, f"profile-for-event-{rule_name}",
+                             schedule=events.Schedule.cron(
+                                 minute=minute, hour=hour, month=month,
+                                 week_day=week_day, year=year)
+                             )
+    # Event input
+    event_rule.add_target(
+        targets.SfnStateMachine(
+            cdk_functionality,
+            input=events.RuleTargetInput.from_object(event_input),
+        )
+    )
+
+
+def put_ssm_string_parameter(construct, parameter_name, string_value,
+                             description, allowed_pattern=".*"):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param parameter_name: string
+                           SSM parameter name
+    :param string_value: string
+                         String value we want for SSM parameter
+    :param description: string
+                        Description for SSM
+    :param allowed_pattern: string
+                            Allowed pattern for SSM
+    :return: object
+             AWS SSM parameter object
+    """
+    res = ssm.StringParameter(construct, f"profile-for-ssm-{parameter_name}",
+                              allowed_pattern=allowed_pattern,
+                              description=description,
+                              parameter_name=parameter_name,
+                              string_value=string_value,
+                              tier=ssm.ParameterTier.STANDARD
+                              )
+
+    return res
 
 
 def get_cdk_codebuild_step(git_source, commands, build_step='Synth',
