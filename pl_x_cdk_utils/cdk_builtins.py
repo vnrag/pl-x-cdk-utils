@@ -1,5 +1,7 @@
 from aws_cdk import (
     Duration,
+    aws_glue,
+    aws_iam as iam,
     aws_lambda as _lambda
 )
 import aws_cdk as core
@@ -48,6 +50,75 @@ def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
         function_name=function_name
     )
     return l_handler
+
+
+def create_glue_crawler(construct, name, profile, db_name, role, table_prefix,
+                        targets, configuration=None, schedule=None):
+    """
+    :param construct: object
+                      Stack Scope
+    :param name: string
+                 Name for the glue-crwaler
+    :param profile: string
+                    Profile name for glue-crawler
+    :param db_name: string
+                    Name for database
+    :param role: object
+                 AWS IAM role object
+    :param table_prefix: string
+                        Prefix we want to use in table
+    :param targets: list
+                    List of Key, value arguments for target,
+                    eg: [{"path": "s3://bucket/path_to_file"}]
+    :param configuration: string
+                          Additional configurations for glue-crawler
+    :param schedule: string
+                     String value for cron
+    :return: object
+             Glue-Crawler object
+    """
+    glue_crawler = aws_glue.CfnCrawler(
+        construct, profile,
+        database_name=db_name,
+        role=role,
+        table_prefix=table_prefix,
+        targets=targets,
+        name=name
+    )
+    if configuration:
+        glue_crawler.configuration = configuration
+    if schedule:
+        glue_crawler.schedule = aws_glue.CfnCrawler.ScheduleProperty(
+            schedule_expression=schedule)
+
+    return glue_crawler
+
+
+def get_added_policies_as_role(construct, role_name, principal, actions_list,
+                               resources_list=['*']):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param role_name: string
+                      Role name
+    :param principal: string
+                      AWS principal that will be using the role
+    :param actions_list: list
+                         List of permission actions for the role
+    :param resources_list: list
+                           List for the resources we want to give the permission
+    :return: object
+             IAM role object
+    """
+    role = iam.Role(
+        construct, f"profile_for_{role_name}", role_name=role_name,
+        assumed_by=iam.ServicePrincipal(principal))
+    role.add_to_policy(iam.PolicyStatement(
+        resources=resources_list,
+        actions=actions_list
+    ))
+    return role
 
 
 def get_cdk_codebuild_step(git_source, commands, build_step='Synth',
