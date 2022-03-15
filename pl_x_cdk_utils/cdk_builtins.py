@@ -189,7 +189,7 @@ def put_ssm_string_parameter(construct, parameter_name, string_value,
     return res
 
 
-def retrieve_ssm_string_parameter(construct, parameter_name):
+def retrieve_ssm_string_parameter_value(construct, parameter_name):
     """
 
     :param construct: object
