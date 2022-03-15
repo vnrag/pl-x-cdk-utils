@@ -1,8 +1,10 @@
 from aws_cdk import (
     Duration,
+    RemovalPolicy,
     aws_glue,
     aws_iam as iam,
     aws_ssm as ssm,
+    aws_logs as logs,
     aws_events as events,
     aws_lambda as _lambda,
     aws_events_targets as targets,
@@ -204,6 +206,25 @@ def retrieve_ssm_string_parameter_value(construct, parameter_name):
         parameter_name=parameter_name).string_value
 
     return val
+
+
+def create_log_group(construct, name, removal_policy=RemovalPolicy.DESTROY):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param name: string
+                 Name for the log group
+    :param removal_policy: object
+                           Removal policy object
+    :return: object
+             AWS CDK log group object
+    """
+    log_group = logs.LogGroup(construct, f"profile-for-log-{name}",
+                              log_group_name=name,
+                              removal_policy=removal_policy)
+
+    return log_group
 
 
 def get_cdk_codebuild_step(git_source, commands, build_step='Synth',
