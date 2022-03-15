@@ -3,7 +3,7 @@ from aws_cdk.aws_kinesisfirehose import CfnDeliveryStream as FireHose
 
 dynamic_output_path = "/year=!{timestamp:yyyy}/month=!{timestamp:MM}/!" \
                       "{timestamp:dd}_rand=!{firehose:random-string}"
-dynamic_error_path = "Failures/!{firehose:error-output-type}/year=!" \
+dynamic_error_path = "_failures/!{firehose:error-output-type}/year=!" \
                      "{timestamp:yyyy}/month=!{timestamp:MM}/!{timestamp:dd}"
 
 
