@@ -25,12 +25,12 @@ def create_glue_table(construct, database, table_name, bucket,
     Create Glue table
     :param construct: object
                       Stack Scope
-    :param database: string
-                     Name of the database for the table
+    :param database: object
+                     Glue database objectb
     :param table_name: string
                        Name for the table
-    :param bucket: string
-                   Name for the bucket for the dataset
+    :param bucket: object
+                   S3 bucket object
     :param s3_prefix: string
                       S3 prefix for the data
     :param columns: list
