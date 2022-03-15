@@ -7,6 +7,15 @@ dynamic_error_path = "Failures/!{firehose:error-output-type}/year=!" \
                      "{timestamp:yyyy}/month=!{timestamp:MM}/!{timestamp:dd}"
 
 
+def get_delivery_stream_for_s3_destination(construct, name, config):
+    s3_firehose_delivery_stream = FireHose(
+        construct, f"profile-for-delivery-stream-{name}",
+        delivery_stream_name=name,
+        extended_s3_destination_configuration=config
+    )
+    return s3_firehose_delivery_stream
+
+
 def get_buffering_hint(interval=60, size=128):
     buff_property = FireHose.BufferingHintsProperty(
         interval_in_seconds=interval, size_in_m_bs=size
@@ -36,7 +45,7 @@ def get_data_conversion_config_property(database_name, table_name, role_arn,
 
 def configure_extended_s3_destination_property(
         bucket_arn, output_prefix, log_group_name, log_stream_name,
-        role_arn, data_format_conversion_config, buffering_hints=None):
+        role_arn, db_name, table_name, buffering_hints=None):
     buffering_hints = buffering_hints if \
         buffering_hints else get_buffering_hint()
     log_option = FireHose.CloudWatchLoggingOptionsProperty(
@@ -45,6 +54,8 @@ def configure_extended_s3_destination_property(
 
     prefix = output_prefix + dynamic_output_path
     error_output_prefix = output_prefix + dynamic_error_path
+    data_format_conversion_config = get_data_conversion_config_property(
+        db_name, table_name, role_arn)
     extended_s3_config = FireHose.ExtendedS3DestinationConfigurationProperty(
         bucket_arn=bucket_arn, buffering_hints=buffering_hints,
         prefix=prefix, error_output_prefix=error_output_prefix,
