@@ -29,14 +29,20 @@ def get_data_conversion_config_property(database_name, table_name, role_arn,
 
 
 def configure_extended_s3_destination_property(
-        bucket_arn, prefix, log_stream_name, error_output_prefix,
-        data_format_config, buffering_hints=None):
-    buffering_hints = buffering_hints if buffering_hints else \
-        get_buffering_hint()
+        bucket_arn, prefix, log_group_name, log_stream_name, role_arn,
+        error_output_prefix, data_format_conversion_config,
+        buffering_hints=None):
+    buffering_hints = buffering_hints if \
+        buffering_hints else get_buffering_hint()
     log_option = FireHose.CloudWatchLoggingOptionsProperty(
+        enabled=True, log_group_name=log_group_name,
         log_stream_name=log_stream_name)
+
     extended_s3_config = FireHose.ExtendedS3DestinationConfigurationProperty(
-        bucket_arn=bucket_arn, buffering_hints=buffering_hints, prefix=prefix,
-        error_output_prefix=error_output_prefix,
-        data_format_conversion_configuration=data_format_config
+        bucket_arn=bucket_arn, buffering_hints=buffering_hints,
+        prefix=prefix, error_output_prefix=error_output_prefix,
+        cloud_watch_logging_options=log_option,
+        data_format_conversion_configuration=data_format_conversion_config,
+        role_arn=role_arn
     )
+    return extended_s3_config
