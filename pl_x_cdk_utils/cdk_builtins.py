@@ -14,7 +14,7 @@ import aws_cdk as core
 
 def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
                          layers_list=None, memory_size=None, timeout=None,
-                         function_name=None, runtime=None):
+                         function_name=None, runtime=None, environment={}):
     """
     Implement Lambda Function
     :param construct: object
@@ -36,6 +36,8 @@ def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
     :param runtime: object
                     Lambda runtime object for python programming language
                     and version
+    :param environment: dict
+                        Environment for lambda if needed
     :return: object
              Lambda handler
     """
@@ -52,7 +54,8 @@ def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
         memory_size=memory_size,
         timeout=Duration.seconds(timeout),
         role=roles,
-        function_name=function_name
+        function_name=function_name,
+        environment=environment
     )
     return l_handler
 
