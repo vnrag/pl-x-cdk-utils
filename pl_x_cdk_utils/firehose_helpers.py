@@ -1,32 +1,42 @@
-from aws_cdk import (
-    aws_kinesisfirehose as firehose,
-)
+from aws_cdk.aws_kinesisfirehose import CfnDeliveryStream as FireHose
 
 
-def configure_deliver_stream_extended_s3_destination():
-    extended_s3_config = firehose.CfnDeliveryStream.ExtendedS3DestinationConfigurationProperty(bucket_arn=data_bucket.bucket_arn,
-                                                                                                   buffering_hints=firehose.CfnDeliveryStream.BufferingHintsProperty(
-                                                                                                       interval_in_seconds=60,
-                                                                                                       size_in_m_bs=128
-                                                                                                   ),
-                                                                                                   cloud_watch_logging_options=firehose.CfnDeliveryStream.CloudWatchLoggingOptionsProperty(
-                                                                                                       enabled=True,
-                                                                                                       log_group_name=log_group.log_group_name,
-                                                                                                       log_stream_name=log_stream.log_stream_name),
-                                                                                                   # for dynamic partitionning
-                                                                                                   prefix="nssFirehose/year=!{timestamp:yyyy}/month=!{timestamp:MM}/!{timestamp:dd}_rand=!{firehose:random-string}",
-                                                                                                   error_output_prefix="nssFirehoseFailures/!{firehose:error-output-type}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/!{timestamp:dd}",
-                                                                                                   data_format_conversion_configuration=firehose.CfnDeliveryStream.DataFormatConversionConfigurationProperty(enabled=True,
-                                                                                                                                                                                                             output_format_configuration=firehose.CfnDeliveryStream.OutputFormatConfigurationProperty(
-                                                                                                                                                                                                                 serializer=firehose.CfnDeliveryStream.SerializerProperty
-                                                                                                                                                                                                                 (parquet_ser_de=firehose.CfnDeliveryStream.ParquetSerDeProperty(compression='SNAPPY'))),
-                                                                                                                                                                                                             input_format_configuration=firehose.CfnDeliveryStream.InputFormatConfigurationProperty(
-                                                                                                                                                                                                                 deserializer=firehose.CfnDeliveryStream.DeserializerProperty(hive_json_ser_de=firehose.CfnDeliveryStream.HiveJsonSerDeProperty())),
-                                                                                                                                                                                                             schema_configuration=firehose.CfnDeliveryStream.SchemaConfigurationProperty(
-                                                                                                                                                                                                                 database_name="kinesis_webtracking", table_name="nss", role_arn=firehose_role.role_arn)
-                                                                                                                                                                                                             ),
-                                                                                                   # dynamic_partitioning_configuration={"Enabled":True},
-                                                                                                   # # processing_configuration={}
-                                                                                                   role_arn=firehose_role.role_arn,
+def get_buffering_hint(interval=60, size=128):
+    buff_property = FireHose.BufferingHintsProperty(
+        interval_in_seconds=interval, size_in_m_bs=size
+    )
+    return buff_property
 
-                                                                                                   )
+
+def get_data_conversion_config_property(database_name, table_name, role_arn,
+                                        compression='SNAPPY'):
+    config_property = FireHose.DataFormatConversionConfigurationProperty(
+        enabled=True,
+        output_format_configuration=FireHose.OutputFormatConfigurationProperty(
+            serializer=FireHose.SerializerProperty(
+                parquet_ser_de=FireHose.ParquetSerDeProperty(
+                    compression=compression))
+        ),
+        input_format_configuration=FireHose.InputFormatConfigurationProperty(
+            deserializer=FireHose.DeserializerProperty(
+                hive_json_ser_de=FireHose.HiveJsonSerDeProperty()
+            )
+        ), schema_configuration=FireHose.SchemaConfigurationProperty(
+            database_name=database_name, table_name=table_name,
+            role_arn=role_arn)
+    )
+    return config_property
+
+
+def configure_extended_s3_destination_property(
+        bucket_arn, prefix, log_stream_name, error_output_prefix,
+        data_format_config, buffering_hints=None):
+    buffering_hints = buffering_hints if buffering_hints else \
+        get_buffering_hint()
+    log_option = FireHose.CloudWatchLoggingOptionsProperty(
+        log_stream_name=log_stream_name)
+    extended_s3_config = FireHose.ExtendedS3DestinationConfigurationProperty(
+        bucket_arn=bucket_arn, buffering_hints=buffering_hints, prefix=prefix,
+        error_output_prefix=error_output_prefix,
+        data_format_conversion_configuration=data_format_config
+    )
