@@ -177,7 +177,8 @@ def put_ssm_string_parameter(construct, parameter_name, string_value,
     :return: object
              AWS SSM parameter object
     """
-    res = ssm.StringParameter(construct, f"profile-for-ssm-{parameter_name}",
+    res = ssm.StringParameter(construct,
+                              f"profile-for-ssm-put-{parameter_name}",
                               allowed_pattern=allowed_pattern,
                               description=description,
                               parameter_name=parameter_name,
@@ -186,6 +187,23 @@ def put_ssm_string_parameter(construct, parameter_name, string_value,
                               )
 
     return res
+
+
+def retrieve_ssm_string_parameter(construct, parameter_name):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param parameter_name: string
+                           SSM parameter name
+    :return: object
+             AWS SSM parameter token object used as string during synth
+    """
+    val = ssm.StringParameter.from_string_parameter_attributes(
+        construct, f"profile-for-ssm-retrieve-{parameter_name}",
+        parameter_name=parameter_name).string_value
+
+    return val
 
 
 def get_cdk_codebuild_step(git_source, commands, build_step='Synth',
