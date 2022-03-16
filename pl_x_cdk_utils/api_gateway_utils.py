@@ -64,21 +64,27 @@ def integrate_lambda_to_api(lambda_handler, req_templates=None):
     return lambda_integration
 
 
-def add_resource_to_api(api_object, name, api_cors=None):
+def add_resource_to_api(api_object, name, root=True, api_cors=None):
     """
     Add resource to existing API
     :param api_object: object
                        API object
     :param name: string
                  Name for the resource
+    :param root: bool
+                 Bool value to decide to either add root or not
     :param api_cors: object
                      Cors for resource
     :return: object
             Updated API object after resource
     """
     api_cors = api_cors if api_cors else DEFAULT_CORS
-    updated_api = api_object.root.add_resource(
-        name, default_cors_preflight_options=api_cors)
+    if root:
+        updated_api = api_object.root.add_resource(
+            name, default_cors_preflight_options=api_cors)
+    else:
+        updated_api = api_object.add_resource(
+            name, default_cors_preflight_options=api_cors)
     return updated_api
 
 
