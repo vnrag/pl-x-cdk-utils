@@ -128,7 +128,7 @@ def get_added_policies_as_role(construct, role_name, principal, actions_list,
 
 def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
                    hour="6", month="*", week_day="*", year="*",
-                   event_input={}):
+                   event_input={}, cdk_function='state_machine'):
     """
     :param construct: object
                       Stack Scope
@@ -157,12 +157,20 @@ def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
                                  week_day=week_day, year=year)
                              )
     # Event input
-    event_rule.add_target(
-        targets.SfnStateMachine(
-            cdk_functionality,
-            input=events.RuleTargetInput.from_object(event_input),
+    if cdk_function == 'state_machine':
+        event_rule.add_target(
+            targets.SfnStateMachine(
+                cdk_functionality,
+                input=events.RuleTargetInput.from_object(event_input),
+            )
         )
-    )
+    if cdk_function == 'lambda':
+        event_rule.add_target(
+            targets.LambdaFunction(
+                cdk_functionality,
+                input=events.RuleTargetInput.from_object(event_input),
+            )
+        )
 
 
 def put_ssm_string_parameter(construct, parameter_name, string_value,
