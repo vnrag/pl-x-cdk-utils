@@ -168,7 +168,7 @@ def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
         event_rule.add_target(
             targets.LambdaFunction(
                 cdk_functionality,
-                input=events.RuleTargetInput.from_object(event_input),
+                event=events.RuleTargetInput.from_object(event_input),
             )
         )
 
