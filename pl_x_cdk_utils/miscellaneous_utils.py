@@ -166,7 +166,7 @@ def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
 
 
 def put_ssm_string_parameter(construct, parameter_name, string_value,
-                             description, allowed_pattern=".*"):
+                             description=None, allowed_pattern=".*"):
     """
 
     :param construct: object
@@ -182,6 +182,8 @@ def put_ssm_string_parameter(construct, parameter_name, string_value,
     :return: object
              AWS SSM parameter object
     """
+    description = description if description else f"SSM parameter for" \
+                                                  f" {parameter_name}"
     res = ssm.StringParameter(construct,
                               f"profile-for-ssm-put-{parameter_name}",
                               allowed_pattern=allowed_pattern,

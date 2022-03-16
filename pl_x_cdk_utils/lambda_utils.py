@@ -4,11 +4,12 @@ from aws_cdk import (
 )
 
 
-def implement_cdk_lambda(construct, lambda_path, roles=None, handler=None,
-                         layers_list=None, memory_size=None, timeout=None,
-                         function_name=None, runtime=None, environment={}):
+def implement_lambda_function(
+        construct, lambda_path, roles=None, handler=None, layers_list=None,
+        memory_size=None, timeout=None, function_name=None, runtime=None,
+        environment={}):
     """
-
+    Implement cdk lambda
     :param construct: object
                       Stack Scope
     :param lambda_path: string
