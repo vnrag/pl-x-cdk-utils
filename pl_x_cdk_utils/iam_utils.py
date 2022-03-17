@@ -3,6 +3,23 @@ from aws_cdk import (
 )
 
 
+def get_policy_statement(actions, resources=['*']):
+    """
+    Get policy statement for given actions and resources
+    :param actions: list
+                    List of permissions for the role
+    :param resources: list
+                      List of resources for the permissions
+    :return: object
+             IAM role object
+    """
+    policy_statement = iam.PolicyStatement(
+        actions=actions,
+        resources=resources
+    )
+    return policy_statement
+
+
 def get_added_policies_as_role(construct, role_name, principal, actions_list,
                                resources_list=['*']):
     """
