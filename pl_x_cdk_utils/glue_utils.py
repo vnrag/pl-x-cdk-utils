@@ -1,6 +1,47 @@
 from aws_cdk import (
+    aws_glue,
     aws_glue_alpha as glue
 )
+
+
+def create_glue_crawler(construct, name, db_name, role, table_prefix,
+                        targets, configuration=None, schedule=None):
+    """
+    :param construct: object
+                      Stack Scope
+    :param name: string
+                 Name for the glue-crawler
+    :param db_name: string
+                    Name for database
+    :param role: object
+                 AWS IAM role object
+    :param table_prefix: string
+                        Prefix we want to use in table
+    :param targets: list
+                    List of Key, value arguments for target,
+                    eg: [{"path": "s3://bucket/path_to_file"}]
+    :param configuration: string
+                          Additional configurations for glue-crawler
+    :param schedule: string
+                     String value for cron
+    :return: object
+             Glue-Crawler object
+    """
+    glue_crawler = aws_glue.CfnCrawler(
+        construct, f"profile-for-crawler-{name}",
+        database_name=db_name,
+        role=role,
+        table_prefix=table_prefix,
+        targets=targets,
+        name=name
+    )
+    if configuration:
+        glue_crawler.configuration = configuration
+    if schedule:
+        glue_crawler.schedule = aws_glue.CfnCrawler.ScheduleProperty(
+            schedule_expression=schedule)
+
+    return glue_crawler
 
 
 def create_glue_database(construct, name):

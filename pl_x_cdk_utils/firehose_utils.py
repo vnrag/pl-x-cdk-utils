@@ -8,6 +8,17 @@ dynamic_error_path = "_failures/!{firehose:error-output-type}/year=!" \
 
 
 def get_delivery_stream_for_s3_destination(construct, name, config):
+    """
+    Delivery stream for s3
+    :param construct: object
+                      Stack Scope
+    :param name: string
+                 Name for the delivery stream
+    :param config: object
+                   Configuration object for s3 destination
+    :return: object
+            S3 firehose object
+    """
     s3_firehose_delivery_stream = Firehose(
         construct, f"profile-for-delivery-stream-{name}",
         delivery_stream_name=name,
@@ -17,6 +28,15 @@ def get_delivery_stream_for_s3_destination(construct, name, config):
 
 
 def get_buffering_hint(interval=60, size=128):
+    """
+    Buffering hint for s3 destination property
+    :param interval: int
+                     Time interval for buffering, in seconds
+    :param size: int
+                 Memory for buffering, in mbs
+    :return: object
+             Buffering object
+    """
     buff_property = Firehose.BufferingHintsProperty(
         interval_in_seconds=interval, size_in_m_bs=size
     )
@@ -25,6 +45,19 @@ def get_buffering_hint(interval=60, size=128):
 
 def get_data_conversion_config_property(database_name, table_name, role_arn,
                                         compression='SNAPPY'):
+    """
+    Data conversion property for s3 destination property
+    :param database_name: string
+                          Glue database name
+    :param table_name: string
+                       Glue table name
+    :param role_arn: string
+                     Role arn for the role
+    :param compression: string
+                        Compression type
+    :return: object
+             Data conversion config property for s3 destination property
+    """
     config_property = Firehose.DataFormatConversionConfigurationProperty(
         enabled=True,
         output_format_configuration=Firehose.OutputFormatConfigurationProperty(
@@ -46,6 +79,27 @@ def get_data_conversion_config_property(database_name, table_name, role_arn,
 def configure_extended_s3_destination_property(
         bucket_arn, output_prefix, log_group_name, log_stream_name,
         role_arn, db_name, table_name, buffering_hints=None):
+    """
+    Property for delivery stream for s3
+    :param bucket_arn: string
+                       Bucket arn for s3
+    :param output_prefix: string
+                          S3 path for output
+    :param log_group_name: string
+                           Log group name
+    :param log_stream_name: string
+                            Log stream name
+    :param role_arn: string
+                     Role arn for the role
+    :param db_name: string
+                          Glue database name
+    :param table_name: string
+                       Glue table name
+    :param buffering_hints: object
+                            Buffering hint object
+    :return: object
+             Configuration for s3 destination delivery stream
+    """
     buffering_hints = buffering_hints if \
         buffering_hints else get_buffering_hint()
     log_option = Firehose.CloudWatchLoggingOptionsProperty(
