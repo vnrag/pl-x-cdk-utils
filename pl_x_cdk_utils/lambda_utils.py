@@ -74,7 +74,7 @@ def get_layer_from_arn(construct, layer_name, version):
     return lambda_layer
 
 
-def get_bucket_object_from_arn(construct, function_name):
+def get_lambda_from_arn(construct, function_name):
     """
 
     :param construct: object
