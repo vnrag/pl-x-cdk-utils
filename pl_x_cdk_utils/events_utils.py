@@ -6,7 +6,8 @@ from aws_cdk import (
 
 def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
                    hour="6", month="*", week_day="*", year="*",
-                   event_input={}, cdk_function='state_machine'):
+                   event_input={}, cdk_function='state_machine', 
+                   description="", enabled=True):
     """
     Event rule for the cdk functionalities
     :param construct: object
@@ -27,10 +28,16 @@ def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
                    Year for cron
     :param event_input: dict
                         Input for the execution on given rule
+    :param description: string
+                        event rule description
+    :param enabled: boolean
+                        event rule enabled status
     :return:
     """
     # Event rule for provided cron values
     event_rule = events.Rule(construct, f"profile-for-event-{rule_name}",
+                             description=description,
+                             enabled=enabled,
                              schedule=events.Schedule.cron(
                                  minute=minute, hour=hour, month=month,
                                  week_day=week_day, year=year)
