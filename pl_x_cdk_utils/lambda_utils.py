@@ -80,7 +80,7 @@ def get_lambda_from_arn(construct, function_name):
     :param construct: object
                       Stack Scope
     :param function_name: string
-                       Name of the layer
+                       Name of the function
     :return: object
              Lambda function object
     """
