@@ -85,7 +85,7 @@ def get_codebuild_step(git_source, commands, build_step='Synth',
 
 
 def add_pipeline_stage(pipeline, stage, scope, account_details,
-                       pre_stage=None, post_stage=None):
+                       pre_step_sequence=[], pre_stage=None, post_stage=None):
     """
     Add stage on the pipeline object
     :param pipeline: object
@@ -96,6 +96,8 @@ def add_pipeline_stage(pipeline, stage, scope, account_details,
                   Construct for the stack
     :param account_details: dict
                             Environment details
+    :param pre_step_sequence: list
+                              Steps list to be executed before stage
     :param pre_stage: object
                       Steps before the stage execution
     :param post_stage: object
@@ -111,7 +113,7 @@ def add_pipeline_stage(pipeline, stage, scope, account_details,
             region=account_details['region']
         ),
     ),
-        pre=pipelines.Step.sequence(account_details['approve'])
+        pre=pipelines.Step.sequence(pre_step_sequence)
     )
     if pre_stage:
         stage.add_pre(pre_stage)
