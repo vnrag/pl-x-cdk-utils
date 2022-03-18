@@ -41,6 +41,8 @@ def retrieve_ssm_string_parameter_value(construct, parameter_name, parameter=Fal
                       Stack Scope
     :param parameter_name: string
                            SSM parameter name
+    :param parameter: boolean
+                           SSM parameter flag
     :return: object
              AWS SSM parameter token object used as string during synth
     """
