@@ -72,3 +72,21 @@ def get_layer_from_arn(construct, layer_name, version):
         f"arn:aws:lambda:{construct.region}:{construct.account}:layer"
         f":{layer_name}:{version}")
     return lambda_layer
+
+
+def get_bucket_object_from_arn(construct, function_name):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param function_name: string
+                       Name of the layer
+    :return: object
+             Lambda function object
+    """
+    lambda_function = _lambda.Function.from_function_arn(
+        construct,
+        f"profile-for-lambda-function-{function_name}",
+        f"arn:aws:lambda:{construct.region}:{construct.account}:function:{function_name}"
+        )
+    return lambda_function
