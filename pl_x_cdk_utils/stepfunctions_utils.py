@@ -58,7 +58,7 @@ def step_invoke_lambda_function(
     """
     lambda_state = sfn_tasks.LambdaInvoke(
         construct,
-        name=step_name,
+        step_name,
         lambda_function=lambda_func,
         payload=sfn.TaskInput.from_json_path_at("$")
         if path
