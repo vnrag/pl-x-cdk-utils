@@ -1,13 +1,18 @@
-from aws_cdk import (
-    Duration,
-    aws_lambda as _lambda
-)
+from aws_cdk import Duration, aws_lambda as _lambda
 
 
 def implement_lambda_function(
-        construct, lambda_path, roles=None, handler=None, layers_list=None,
-        memory_size=None, timeout=None, function_name=None, runtime=None,
-        environment={}):
+    construct,
+    lambda_path,
+    roles=None,
+    handler=None,
+    layers_list=None,
+    memory_size=None,
+    timeout=None,
+    function_name=None,
+    runtime=None,
+    environment={},
+):
     """
     Implement cdk lambda
     :param construct: object
@@ -40,7 +45,8 @@ def implement_lambda_function(
     timeout = timeout if timeout else 5
     runtime = runtime if runtime else _lambda.Runtime.PYTHON_3_8
     l_handler = _lambda.Function(
-        construct, f"profile-for-lambda-{function_name}",
+        construct,
+        f"profile-for-lambda-{function_name}",
         runtime=runtime,
         code=_lambda.Code.from_asset(lambda_path),
         handler=handler,
@@ -49,14 +55,14 @@ def implement_lambda_function(
         timeout=Duration.seconds(timeout),
         role=roles,
         function_name=function_name,
-        environment=environment
+        environment=environment,
     )
     return l_handler
 
 
 def get_layer_from_arn(construct, layer_name, version):
     """
-
+    Get lambda layer by ARN
     :param construct: object
                       Stack Scope
     :param layer_name: string
@@ -70,13 +76,14 @@ def get_layer_from_arn(construct, layer_name, version):
         construct,
         f"profile-for-lambda-layer-{layer_name}",
         f"arn:aws:lambda:{construct.region}:{construct.account}:layer"
-        f":{layer_name}:{version}")
+        f":{layer_name}:{version}",
+    )
     return lambda_layer
 
 
 def get_lambda_from_arn(construct, function_name):
     """
-
+    Get lambda function by ARN
     :param construct: object
                       Stack Scope
     :param function_name: string
@@ -87,6 +94,6 @@ def get_lambda_from_arn(construct, function_name):
     lambda_function = _lambda.Function.from_function_arn(
         construct,
         f"profile-for-lambda-function-{function_name}",
-        f"arn:aws:lambda:{construct.region}:{construct.account}:function:{function_name}"
-        )
+        f"arn:aws:lambda:{construct.region}:{construct.account}:function:{function_name}",
+    )
     return lambda_function
