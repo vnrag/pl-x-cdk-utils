@@ -1,5 +1,6 @@
-import boto3
+import json
 import uuid
+import boto3
 
 
 def get_ssm_value(ssm_param):
@@ -100,6 +101,103 @@ def initiate_quicksight_ingestion(dataset_id,quicksight_account_id,
         AwsAccountId=quicksight_account_id
     )
     return response, ingestion_id
+
+
+def change_s3_policy(sid, bucket_name, principal_arn, actions,
+                     resources=['*']):
+    """
+    Add new bucket policy to existing bucket
+
+    Parameters
+    ----------
+    sid : string
+            statement id
+    bucket_name : string
+            name of the bucket resource
+    principal_arn : string
+            principal arn role name
+    actions : list
+            List of access for the given resources
+    resources: list
+            list of resources to give permissions on
+
+    Returns
+    -------
+    dict
+            put_bucket_policy response
+    """
+    s3 = boto3.client('s3', region_name='eu-central-1')
+
+    current_policy = json.loads(s3.get_bucket_policy(
+        Bucket=bucket_name)['Policy'])
+
+    new_policy_statement = {
+        "Sid": sid,
+        "Effect": "Allow",
+        "Principal": {
+            "AWS": principal_arn
+        },
+        "Action": actions,
+        "Resource": resources
+    }
+
+    # check duplicated sid
+    current_sids = []
+    for statement in current_policy["Statement"]:
+        current_sids.append(statement["Sid"])
+
+    working_statements = current_policy["Statement"]
+
+    # add only the new statement if it doesn't exist before
+    if sid not in current_sids:
+        working_statements.append(new_policy_statement)
+    else:
+        return {
+            "message": f"couldn't add the new statement. "
+                       f"sid: {sid} already exists in bucket policy, \
+                please change it and try again",
+            "ResponseMetadata": {"HTTPStatusCode": 400}
+        }
+    bucket_policy = {'Version': '2012-10-17',
+                     "Statement": list(working_statements)}
+
+    response = s3.put_bucket_policy(
+        Bucket=bucket_name, Policy=json.dumps(bucket_policy))
+    # check on response code
+    if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
+        return {
+            "message": (f"{bucket_name} bucket policy is "
+                        f"updated successfully"),
+            "ResponseMetadata": {"HTTPStatusCode": 204}
+        }
+    else:
+        return response
+
+
+def check_policy_statement_syntax(policy_statements):
+    """
+    Checks the policy statement syntax
+    :param policy_statements: dict
+    :return:
+    """
+    working_statements = []
+    mal_statements = []
+    current_sids = []
+    valid_principal = True
+    for statement in policy_statements["Statement"]:
+        if type(statement['Principal']['AWS']) is str:
+            if "arn:aws:" not in statement['Principal']['AWS']:
+                valid_principal = False
+        elif type(statement['Principal']['AWS']) is list:
+            for principal in statement:
+                if "arn:aws:" not in principal:
+                    valid_principal = False
+        if valid_principal:
+            working_statements.append(statement)
+        else:
+            mal_statements.append(statement)
+        current_sids.append(statement["Sid"])
+    return valid_principal, working_statements, mal_statements, current_sids
 
 
 
