@@ -1,17 +1,49 @@
 from aws_cdk import (
+    Stack,
     aws_iam as iam,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as sfn_tasks,
-    Stack,
 )
-
 from aws_cdk.aws_stepfunctions_tasks import (
     EmrAddStep as eas,
     EmrCreateCluster as ecc,
     EmrTerminateCluster as etc,
 )
 
+from pl_x_cdk_utils.helpers import prepare_s3_path
+from pl_x_cdk_utils.logs_utils import create_log_group
 
+
+def deploy_state_machine(construct, name, definition, role, log_group=None,
+                         log_level=sfn.LogLevel.ALL):
+    """
+    Deploy state machine
+    :param construct: object
+                      Stack Scope
+    :param name: string
+                 Name for the state machine
+    :param definition: object
+                        Task definition object
+    :param role: object
+                 IAM Role object
+    :param log_group: object
+                      Log object
+    :param log_level: object
+                      Log level object
+   :return: object
+            State machine object
+    """
+    log_group = log_group if log_group else create_log_group(construct, 
+                                                             name=f"{name}Log")
+    state_machine = sfn.StateMachine(
+            construct, f"profile-for-state-machine-{state_machine_name}",
+            state_machine_name=name,
+            definition=definition, role=role,
+            logs=sfn.LogOptions(destination=log_group, level=log_level)
+    )
+    return state_machine
+    
+    
 def get_state_machine_from_arn(construct, state_machine_name):
     """
     Get state machine by ARN
@@ -42,6 +74,7 @@ def step_invoke_lambda_function(
     result_selector={"$": "$"},
     result_path="$.resp",
     path=False,
+    json_path="$"
 ):
     """
     Get state machine by ARN
@@ -58,11 +91,15 @@ def step_invoke_lambda_function(
     :param output_path: string
                        JSON string as output from the step
     :param result_selector: dict
-                       JSON string as result and assign a name to it for the whole state putput
+                       JSON string as result and assign a name to it for the
+                       whole state output
     :param result_path: string
-                       JSON string as result from the step override the whole output
+                       JSON string as result from the step override the
+                       whole output
     :param path: boolean
                        flag to load payload from given path or payload param
+    :param json_path: boolean
+                       Json path for the payload param
     :return: object
                 State machine lambda task object
     """
@@ -70,7 +107,7 @@ def step_invoke_lambda_function(
         construct,
         step_name,
         lambda_function=lambda_func,
-        payload=sfn.TaskInput.from_json_path_at("$")
+        payload=sfn.TaskInput.from_json_path_at(json_path)
         if path
         else sfn.TaskInput.from_object(payload),
         input_path=input_path,
@@ -82,46 +119,104 @@ def step_invoke_lambda_function(
     return lambda_state
 
 
-def prepare_arg_for_jar_step(
-    bucket_ssm: str,
-    file_path: str,
-) -> list:
-    """Prepare execution script args for emr cluster.
-
-    Args:
-        bucket_ssm (str): name of the bucket
-        file_path (str): file path for the script
-
-    Returns:
-        list: jar script format for the emr cluster
+def get_custom_state(construct, state_name, state_json):
     """
-    jar_args = ["spark-submit", "--deploy-mode", "cluster"]
-    fpath = f"s3://{bucket_ssm}/{file_path}"
-
-    jar_args.append(fpath)
-
-    return jar_args
-
-
-def prepare_s3_path(
-    bucket_ssm: str,
-    prefix: str,
-) -> str:
-    """Prepare s3 path given bucket name and paritions.
-
-    Args:
-        bucket_ssm (str): bucket name
-        prefix (str): partition path
-
-    Returns:
-        str: full s3 path
+     Get the custom state with the provided json
+    :param construct: object
+                      Stack Scope
+    :param state_name: string
+                       Name of the state in the state machine
+    :param state_json: object
+                       Json object for the state
+    :return: object
+                State object
     """
-    path = f"s3://{bucket_ssm}/{prefix}"
+    state = sfn.CustomState(
+            construct, state_name, state_json=state_json
+            )
+    return state
 
-    return path
+
+def get_choice_state(construct, state_name):
+    """
+    Get Success state
+    :param construct: object
+                      Stack Scope
+    :param state_name: string
+                       Name of the state in the state machine
+    :return: object
+             Choice state object
+     """
+    state = sfn.Choice(construct, state_name)
+    return state
 
 
-def create_sfntask_instance_fleet(
+def get_condition_state(conditional_state, comparison_path, transition_state,
+                        type='bool',
+                        comparison_val=True):
+    """
+    Get condition state
+    :param conditional_state: object
+                             State object to implement the conditions
+    :param comparison_path: string
+                            Path to compare the condition with
+    :param transition_state: object
+                             State object for the next state if condition
+                             matches
+    :param type: string
+                 Type of condition
+    :param comparison_val: string/bool
+                           Value to compare in the condition
+     :return: object
+              Choice state object
+    """
+    if type == 'bool':
+        state = conditional_state.when(fn.Condition.boolean_equals(
+                comparison_path, comparison_val), transition_state)
+        
+    return state
+
+
+def get_succeed_state(construct, state_name="Succeeded"):
+    """
+     Get Success state
+    :param construct: object
+                      Stack Scope
+    :param state_name: string
+                       Name of the state in the state machine
+    :return: object
+             Success state object
+    """
+    succeeded_state = sfn.Succeed(
+        construct, state_name
+    )
+    return succeeded_state
+
+
+def get_failed_state(construct, state_name="Failed",
+                     cause="One of the State Failed", error="Failed"):
+    """
+     Get Failed state
+    :param construct: object
+                      Stack Scope
+    :param state_name: string
+                       Name of the state in the state machine
+    :param cause: string
+                  Cause for the failure
+    :param error: string
+                  Error message for the failure state
+    :return: object
+             Failed state object
+    """
+    failed_state = sfn.Fail(
+            construct, state_name,
+            cause=cause,
+            error=error
+            )
+    return failed_state
+
+
+def create_sfn_tasks_instance_fleet(
     instance_role_type: str,
     instance_type: str,
     target_on_demand_capacity: int = 0,
@@ -134,14 +229,18 @@ def create_sfntask_instance_fleet(
     Args:
         instance_role_type (str): instance role type (MASTER, CORE, or TASK)
         instance_type (str): instance group (t2...., m5....)
-        target_on_demand_capacity (int, optional): number of on demand instances. Defaults to 0.
-        target_spot_capacity (int, optional): number of spot instances. Defaults to 0.
-        bid_price (str, optional): bid price for spot instance. Defaults to None.
+        target_on_demand_capacity (int, optional): number of on demand
+        instances. Defaults to 0.
+        target_spot_capacity (int, optional): number of spot instances.
+        Defaults to 0.
+        bid_price (str, optional): bid price for spot instance.
+        Defaults to None.
+        weighted_capacity (int, optional):weighted capacity for each instance.
+         Defaults to 0.
 
     Returns:
         ecc.InstanceFleetConfigProperty: instance fleet config
     """
-    fleet = None
 
     if instance_role_type == "TASK":
         fleet = ecc.InstanceFleetConfigProperty(
@@ -183,7 +282,7 @@ def create_sfntask_instance_fleet(
     return fleet
 
 
-def create_sfntask_instances(
+def create_sfn_tasks_instances(
     ec2_subnet_id: str,
     emr_managed_master_security_group: str,
     emr_managed_slave_security_group: str,
@@ -209,21 +308,21 @@ def create_sfntask_instances(
         # keep_job_flow_alive_when_no_steps=True,
         termination_protected=False,
         instance_fleets=[
-            create_sfntask_instance_fleet(
+            create_sfn_tasks_instance_fleet(
                 "MASTER",
                 "m5.xlarge",
                 target_on_demand_capacity=1,
                 target_spot_capacity=0,
                 weighted_capacity=weighted_capacity,
             ),
-            create_sfntask_instance_fleet(
+            create_sfn_tasks_instance_fleet(
                 "CORE",
                 "m5.xlarge",
                 target_on_demand_capacity=1,
                 target_spot_capacity=0,
                 weighted_capacity=weighted_capacity,
             ),
-            create_sfntask_instance_fleet(
+            create_sfn_tasks_instance_fleet(
                 "TASK",
                 "m5.xlarge",
                 target_on_demand_capacity=0,
@@ -237,7 +336,7 @@ def create_sfntask_instances(
     return instances
 
 
-def create_sfntask_emr_cluster(
+def create_sfn_tasks_emr_cluster(
     scope: Stack,
     step_name: str,
     cluster_name: str,
@@ -270,8 +369,10 @@ def create_sfntask_emr_cluster(
         emr_managed_slave_security_group (str): slave security group
         bid_price (str): bid price for spot instance (TASK)
         weighted_capacity (int): weighted capacity for each instance
-        applications (list, optional): list of applications to be included in the cluster. Defaults to ["spark"].
-        release_label (str, optional): release version of the emr cluster. Defaults to "emr-6.2.0".
+        applications (list, optional): list of applications to be included
+         in the cluster. Defaults to ["spark"].
+        release_label (str, optional): release version of the emr cluster.
+        Defaults to "emr-6.2.0".
 
     Returns:
         ecc: EMR cluster
@@ -279,7 +380,7 @@ def create_sfntask_emr_cluster(
     cluster = ecc(
         scope,
         step_name,
-        instances=create_sfntask_instances(
+        instances=create_sfn_tasks_instances(
             ec2_subnet_id,
             emr_managed_master_security_group,
             emr_managed_slave_security_group,
@@ -312,7 +413,7 @@ def create_sfntask_emr_cluster(
     return cluster
 
 
-def add_sfntask_emr_step(
+def add_sfn_tasks_emr_step(
     scope: Stack,
     step_name: str,
     jar: str,
@@ -324,7 +425,8 @@ def add_sfntask_emr_step(
         scope (Stack): scope of the Stack
         step_name (str): name of the step in the step function
         jar (str): name of the jar file
-        args (list, optional): list of args to execute in the EMR cluster. Defaults to [].
+        args (list, optional): list of args to execute in the EMR cluster.
+        Defaults to [].
 
     Returns:
         eas: execution step in EMR
@@ -343,7 +445,7 @@ def add_sfntask_emr_step(
     return emr_step
 
 
-def terminate_sfntask_emr_cluster(
+def terminate_sfn_tasks_emr_cluster(
     scope: Stack,
     step_name: str,
 ) -> etc:

@@ -1,4 +1,7 @@
-from aws_cdk import Duration, aws_lambda as _lambda
+from aws_cdk import ( 
+    Duration, 
+    aws_lambda as _lambda
+)
 
 
 def implement_lambda_function(
@@ -94,6 +97,7 @@ def get_lambda_from_arn(construct, function_name):
     lambda_function = _lambda.Function.from_function_arn(
         construct,
         f"profile-for-lambda-function-{function_name}",
-        f"arn:aws:lambda:{construct.region}:{construct.account}:function:{function_name}",
+        f"arn:aws:lambda:{construct.region}:"
+        f"{construct.account}:function:{function_name}"
     )
     return lambda_function

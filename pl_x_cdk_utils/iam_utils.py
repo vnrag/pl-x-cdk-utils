@@ -11,7 +11,8 @@ def get_policy_statement(actions, resources=["*"]):
     :return: object
              IAM role object
     """
-    policy_statement = iam.PolicyStatement(actions=actions, resources=resources)
+    policy_statement = iam.PolicyStatement(
+            actions=actions, resources=resources)
     return policy_statement
 
 
@@ -62,8 +63,8 @@ def get_role_from_arn(construct, role_name):
 
 
 def create_role_with_managed_policy(
-    construct, role_name, principal, policies_list, role_exists=False, arn=None
-):
+        construct, role_name, principal, policies_list, role_exists=False,
+        arn=None):
     """
     Create role object and add aws managed policy to it
     :param construct: object
@@ -93,14 +94,15 @@ def create_role_with_managed_policy(
     )
 
     for policy in policies_list:
-        role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name(policy))
+        role.add_managed_policy(
+                iam.ManagedPolicy.from_aws_managed_policy_name(policy))
 
     return role
 
 
 def create_role_with_inline_policy(
-    construct, role_name, principal, actions, resource, role_exists=False, arn=None
-):
+        construct, role_name, principal, actions, resource,
+        role_exists=False, arn=None):
     """
     Create role object and add aws managed policy to it
     :param construct: object
