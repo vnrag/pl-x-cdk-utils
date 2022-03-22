@@ -3,19 +3,21 @@ from aws_cdk import (
     aws_iam as iam,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as sfn_tasks,
-)
+    )
 from aws_cdk.aws_stepfunctions_tasks import (
     EmrAddStep as eas,
     EmrCreateCluster as ecc,
     EmrTerminateCluster as etc,
-)
+    )
 
 from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
 
 
-def deploy_state_machine(construct, name, definition, role, log_group=None,
-                         log_level=sfn.LogLevel.ALL):
+def deploy_state_machine(
+        construct, name, definition, role, log_group=None,
+        log_level=sfn.LogLevel.ALL
+        ):
     """
     Deploy state machine
     :param construct: object
@@ -33,17 +35,19 @@ def deploy_state_machine(construct, name, definition, role, log_group=None,
    :return: object
             State machine object
     """
-    log_group = log_group if log_group else create_log_group(construct, 
-                                                             name=f"{name}Log")
+    log_group = log_group if log_group else create_log_group(
+        construct,
+        name=f"{name}Log"
+        )
     state_machine = sfn.StateMachine(
             construct, f"profile-for-state-machine-{state_machine_name}",
             state_machine_name=name,
             definition=definition, role=role,
             logs=sfn.LogOptions(destination=log_group, level=log_level)
-    )
+            )
     return state_machine
-    
-    
+
+
 def get_state_machine_from_arn(construct, state_machine_name):
     """
     Get state machine by ARN
@@ -55,27 +59,27 @@ def get_state_machine_from_arn(construct, state_machine_name):
                 State machine object
     """
     state_machine = sfn.StateMachine.from_state_machine_arn(
-        construct,
-        f"profile-for-state-machine-{state_machine_name}",
-        f"arn:aws:states:{construct.region}:"
-        f"{construct.account}:stateMachine:{state_machine_name}",
-    )
-
+            construct,
+            f"profile-for-state-machine-{state_machine_name}",
+            f"arn:aws:states:{construct.region}:"
+            f"{construct.account}:stateMachine:{state_machine_name}",
+            )
+    
     return state_machine
 
 
 def step_invoke_lambda_function(
-    construct,
-    step_name,
-    lambda_func,
-    payload={},
-    input_path="$",
-    output_path="$",
-    result_selector={"$": "$"},
-    result_path="$.resp",
-    path=False,
-    json_path="$"
-):
+        construct,
+        step_name,
+        lambda_func,
+        payload={},
+        input_path="$",
+        output_path="$",
+        result_selector={"$": "$"},
+        result_path="$.resp",
+        path=False,
+        json_path="$"
+        ):
     """
     Get state machine by ARN
     :param construct: object
@@ -104,18 +108,18 @@ def step_invoke_lambda_function(
                 State machine lambda task object
     """
     lambda_state = sfn_tasks.LambdaInvoke(
-        construct,
-        step_name,
-        lambda_function=lambda_func,
-        payload=sfn.TaskInput.from_json_path_at(json_path)
-        if path
-        else sfn.TaskInput.from_object(payload),
-        input_path=input_path,
-        output_path=output_path,
-        result_path=result_path,
-        result_selector=result_selector,
-    )
-
+            construct,
+            step_name,
+            lambda_function=lambda_func,
+            payload=sfn.TaskInput.from_json_path_at(json_path)
+            if path
+            else sfn.TaskInput.from_object(payload),
+            input_path=input_path,
+            output_path=output_path,
+            result_path=result_path,
+            result_selector=result_selector,
+            )
+    
     return lambda_state
 
 
@@ -151,9 +155,11 @@ def get_choice_state(construct, state_name):
     return state
 
 
-def get_condition_state(conditional_state, comparison_path, transition_state,
-                        type='bool',
-                        comparison_val=True):
+def get_condition_state(
+        conditional_state, comparison_path, transition_state,
+        type='bool',
+        comparison_val=True
+        ):
     """
     Get condition state
     :param conditional_state: object
@@ -171,9 +177,12 @@ def get_condition_state(conditional_state, comparison_path, transition_state,
               Choice state object
     """
     if type == 'bool':
-        state = conditional_state.when(fn.Condition.boolean_equals(
-                comparison_path, comparison_val), transition_state)
-        
+        state = conditional_state.when(
+                fn.Condition.boolean_equals(
+                        comparison_path, comparison_val
+                        ), transition_state
+                )
+    
     return state
 
 
@@ -188,13 +197,15 @@ def get_succeed_state(construct, state_name="Succeeded"):
              Success state object
     """
     succeeded_state = sfn.Succeed(
-        construct, state_name
-    )
+            construct, state_name
+            )
     return succeeded_state
 
 
-def get_failed_state(construct, state_name="Failed",
-                     cause="One of the State Failed", error="Failed"):
+def get_failed_state(
+        construct, state_name="Failed",
+        cause="One of the State Failed", error="Failed"
+        ):
     """
      Get Failed state
     :param construct: object
@@ -217,13 +228,13 @@ def get_failed_state(construct, state_name="Failed",
 
 
 def create_sfn_tasks_instance_fleet(
-    instance_role_type: str,
-    instance_type: str,
-    target_on_demand_capacity: int = 0,
-    target_spot_capacity: int = 0,
-    bid_price: str = None,  # type: ignore
-    weighted_capacity: int = 0,
-) -> ecc.InstanceFleetConfigProperty:
+        instance_role_type: str,
+        instance_type: str,
+        target_on_demand_capacity: int = 0,
+        target_spot_capacity: int = 0,
+        bid_price: str = None,  # type: ignore
+        weighted_capacity: int = 0,
+        ) -> ecc.InstanceFleetConfigProperty:
     """Create instance fleets for the EMR cluster.
 
     Args:
@@ -241,54 +252,60 @@ def create_sfn_tasks_instance_fleet(
     Returns:
         ecc.InstanceFleetConfigProperty: instance fleet config
     """
-
+    
     if instance_role_type == "TASK":
         fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
-            # the properties below are optional
-            instance_type_configs=[
-                ecc.InstanceTypeConfigProperty(
-                    instance_type=instance_type,
-                    bid_price=bid_price,
-                    weighted_capacity=weighted_capacity,
+                instance_fleet_type=eval(
+                    f"ecc.InstanceRoleType.{instance_role_type}"
+                    ),
+                # the properties below are optional
+                instance_type_configs=[
+                        ecc.InstanceTypeConfigProperty(
+                                instance_type=instance_type,
+                                bid_price=bid_price,
+                                weighted_capacity=weighted_capacity,
+                                )
+                        ],
+                launch_specifications=ecc
+                    .InstanceFleetProvisioningSpecificationsProperty(
+                        spot_specification=
+                        ecc.SpotProvisioningSpecificationProperty(
+                                timeout_action=
+                                ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
+                                timeout_duration_minutes=600),
+                        ),
+                name=instance_role_type,
+                target_on_demand_capacity=target_on_demand_capacity,
+                target_spot_capacity=target_spot_capacity,
                 )
-            ],
-            launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
-                spot_specification=ecc.SpotProvisioningSpecificationProperty(
-                    timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
-                    timeout_duration_minutes=600,
-                ),
-            ),
-            name=instance_role_type,
-            target_on_demand_capacity=target_on_demand_capacity,
-            target_spot_capacity=target_spot_capacity,
-        )
     else:
         fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
-            # the properties below are optional
-            instance_type_configs=[
-                ecc.InstanceTypeConfigProperty(
-                    instance_type=instance_type,
-                    bid_price=bid_price,
-                    weighted_capacity=weighted_capacity,
+                instance_fleet_type=eval(
+                    f"ecc.InstanceRoleType.{instance_role_type}"
+                    ),
+                # the properties below are optional
+                instance_type_configs=[
+                        ecc.InstanceTypeConfigProperty(
+                                instance_type=instance_type,
+                                bid_price=bid_price,
+                                weighted_capacity=weighted_capacity,
+                                )
+                        ],
+                name=instance_role_type,
+                target_on_demand_capacity=target_on_demand_capacity,
+                target_spot_capacity=target_spot_capacity,
                 )
-            ],
-            name=instance_role_type,
-            target_on_demand_capacity=target_on_demand_capacity,
-            target_spot_capacity=target_spot_capacity,
-        )
-
+    
     return fleet
 
 
 def create_sfn_tasks_instances(
-    ec2_subnet_id: str,
-    emr_managed_master_security_group: str,
-    emr_managed_slave_security_group: str,
-    bid_price: str,
-    weighted_capacity: int,
-) -> ecc.InstancesConfigProperty:
+        ec2_subnet_id: str,
+        emr_managed_master_security_group: str,
+        emr_managed_slave_security_group: str,
+        bid_price: str,
+        config={}
+        ) -> ecc.InstancesConfigProperty:
     """Create instances for the EMR cluster.
 
     Args:
@@ -296,43 +313,54 @@ def create_sfn_tasks_instances(
         emr_managed_master_security_group (str): master security group
         emr_managed_slave_security_group (str): slave security group
         bid_price (str): bid price for spot instance (TASK)
-        weighted_capacity (int): weighted capacity for each instance
+        config (dict): configurations needed for instances
 
     Returns:
         ecc.InstancesConfigProperty: instances config
     """
-    instances = ecc.InstancesConfigProperty(
-        ec2_subnet_id=ec2_subnet_id,
-        emr_managed_master_security_group=emr_managed_master_security_group,
-        emr_managed_slave_security_group=emr_managed_slave_security_group,
-        # keep_job_flow_alive_when_no_steps=True,
-        termination_protected=False,
-        instance_fleets=[
-            create_sfn_tasks_instance_fleet(
-                "MASTER",
-                "m5.xlarge",
-                target_on_demand_capacity=1,
-                target_spot_capacity=0,
-                weighted_capacity=weighted_capacity,
-            ),
-            create_sfn_tasks_instance_fleet(
-                "CORE",
-                "m5.xlarge",
-                target_on_demand_capacity=1,
-                target_spot_capacity=0,
-                weighted_capacity=weighted_capacity,
-            ),
-            create_sfn_tasks_instance_fleet(
-                "TASK",
-                "m5.xlarge",
-                target_on_demand_capacity=0,
-                target_spot_capacity=3,
-                bid_price=bid_price,
-                weighted_capacity=weighted_capacity,
-            ),
-        ],
-    )
+    master_instance_type = config['master_instance_type'] if \
+        'master_instance_type' in config else 'm5.xlarge'
+    core_instance_type = config['core_instance_type'] if \
+            'core_instance_type' in config else 'm5.xlarge'
+    core_on_demand= config['core_on_demand'] if 'core_on_demand' in config\
+        else 1
+    core_weighted =  config['core_weighted'] if 'core_weighted' in config \
+        else 1
+    core_spot = config['core_spot'] if 'core_spot' in config else 0
 
+    
+    instances = ecc.InstancesConfigProperty(
+            ec2_subnet_id=ec2_subnet_id,
+            emr_managed_master_security_group
+            =emr_managed_master_security_group,
+            emr_managed_slave_security_group=emr_managed_slave_security_group,
+            # keep_job_flow_alive_when_no_steps=True,
+            termination_protected=False,
+            instance_fleets=[
+                    create_sfn_tasks_instance_fleet(
+                            "MASTER",
+                            master_instance_type,
+                            target_on_demand_capacity=1,
+                            weighted_capacity=1,
+                            ),
+                    create_sfn_tasks_instance_fleet(
+                            "CORE",
+                            core_instance_type,
+                            target_on_demand_capacity=core_on_demand,
+                            target_spot_capacity=core_spot,
+                            weighted_capacity=core_weighted,
+                            ),
+                    create_sfn_tasks_instance_fleet(
+                            "TASK",
+                            "m5.xlarge",
+                            target_on_demand_capacity=0,
+                            target_spot_capacity=3,
+                            bid_price=bid_price,
+                            weighted_capacity=1,
+                            )
+                    ]
+            )
+    
     return instances
 
 
@@ -397,14 +425,16 @@ def create_sfn_tasks_emr_cluster(
         bootstrap_actions=[
             ecc.BootstrapActionConfigProperty(
                 name="Install external libraries",
-                script_bootstrap_action=ecc.ScriptBootstrapActionConfigProperty(
-                    path=prepare_s3_path(emr_config_bucket, bootstrap_uri),
+                script_bootstrap_action=
+                ecc.ScriptBootstrapActionConfigProperty(
+                        path=prepare_s3_path(emr_config_bucket, bootstrap_uri),
                 ),
             )
         ],
         log_uri=prepare_s3_path(emr_config_bucket, log_uri),
         release_label=release_label,
-        scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
+        scale_down_behavior=
+        ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         # tags=[CfnTag(key="key", value="value")],
         visible_to_all_users=True,
         result_path="$.cluster",
