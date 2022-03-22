@@ -47,6 +47,45 @@ def trigger_glue_crawler(gc_name, aws_credentials=None,
     return resp
 
 
+def invoke_lambda(lambda_func, payload={}):
+    """
+    Invoke lambda function
+    :param lambda_func: string
+                         Name for the lambda function
+    :param payload: dict
+                    Payload i.e. event for lambda
+    :return: object
+            Response from boto3 client
+    """
+    boto_conn = boto3.client("lambda")
+    resp = boto_conn.invoke(
+        FunctionName=lambda_func,
+        Payload=json.dumps(payload)
+    )
+    out = json.loads(resp["Payload"].read())
+    return out
+
+
+def get_files_under_given_bucket_prefix(bucket, prefix):
+    """
+    Get all the files under given bucket and path
+    :param bucket: string
+                   Bucket name
+    :param prefix: string
+                   Path for the files
+    :return: list
+            List of files under given bucket and prefix
+    """
+    s3 = boto3.client("s3")
+    all_objects = s3.list_objects(Bucket=bucket, Prefix=prefix, Delimiter="/")
+
+    files_path_list = []
+    for file in all_objects["Contents"] if "Contents" in all_objects else {}:
+        files_path_list.append(file['Key']) if file['Size'] > 0 else ''
+
+    return files_path_list
+
+
 def get_cross_account_credentials(account_id, role_name,
                                   region_name='eu-central-1'):
     """
@@ -173,31 +212,6 @@ def change_s3_policy(sid, bucket_name, principal_arn, actions,
     else:
         return response
 
-
-def check_policy_statement_syntax(policy_statements):
-    """
-    Checks the policy statement syntax
-    :param policy_statements: dict
-    :return:
-    """
-    working_statements = []
-    mal_statements = []
-    current_sids = []
-    valid_principal = True
-    for statement in policy_statements["Statement"]:
-        if type(statement['Principal']['AWS']) is str:
-            if "arn:aws:" not in statement['Principal']['AWS']:
-                valid_principal = False
-        elif type(statement['Principal']['AWS']) is list:
-            for principal in statement:
-                if "arn:aws:" not in principal:
-                    valid_principal = False
-        if valid_principal:
-            working_statements.append(statement)
-        else:
-            mal_statements.append(statement)
-        current_sids.append(statement["Sid"])
-    return valid_principal, working_statements, mal_statements, current_sids
 
 
 
