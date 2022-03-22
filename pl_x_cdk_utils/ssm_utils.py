@@ -34,7 +34,8 @@ def put_ssm_string_parameter(construct, parameter_name, string_value,
     return res
 
 
-def retrieve_ssm_string_parameter_value(construct, parameter_name, parameter=False):
+def retrieve_ssm_string_parameter_value(construct, parameter_name,
+                                        parameter=False):
     """
 
     :param construct: object
@@ -52,5 +53,20 @@ def retrieve_ssm_string_parameter_value(construct, parameter_name, parameter=Fal
         ssm.StringParameter.from_string_parameter_attributes(
         construct, f"profile-for-ssm-retrieve-{parameter_name}",
         parameter_name=parameter_name).string_value
+
+    return val
+
+
+def retrieve_ssm_string_parameter_from_lookup(construct, parameter_name):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param parameter_name: string
+                           SSM parameter name
+    :return: object
+             AWS SSM parameter token object
+    """
+    val = ssm.StringParameter.value_from_lookup(construct, parameter_name)
 
     return val
