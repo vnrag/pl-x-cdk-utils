@@ -174,21 +174,21 @@ def create_sfn_tasks_instances(
         # keep_job_flow_alive_when_no_steps=True,
         termination_protected=False,
         instance_fleets=[
-            create_sfntask_instance_fleet(
+            create_sfn_tasks_instance_fleet(
                 "MASTER",
                 "m5.xlarge",
                 target_on_demand_capacity=1,
                 target_spot_capacity=0,
                 weighted_capacity=weighted_capacity,
             ),
-            create_sfntask_instance_fleet(
+            create_sfn_tasks_instance_fleet(
                 "CORE",
                 "m5.xlarge",
                 target_on_demand_capacity=1,
                 target_spot_capacity=0,
                 weighted_capacity=weighted_capacity,
             ),
-            create_sfntask_instance_fleet(
+            create_sfn_tasks_instance_fleet(
                 "TASK",
                 "m5.xlarge",
                 target_on_demand_capacity=0,
@@ -244,7 +244,7 @@ def create_sfn_tasks_emr_cluster(
     cluster = ecc(
         scope,
         step_name,
-        instances=create_sfntask_instances(
+        instances=create_sfn_tasks_instances(
             ec2_subnet_id,
             emr_managed_master_security_group,
             emr_managed_slave_security_group,
