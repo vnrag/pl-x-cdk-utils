@@ -4,11 +4,14 @@ from aws_cdk import (
     aws_stepfunctions_tasks as sfn_tasks,
     Stack,
 )
-
 from aws_cdk.aws_stepfunctions_tasks import (
     EmrAddStep as eas,
     EmrCreateCluster as ecc,
     EmrTerminateCluster as etc,
+)
+
+from pl_x_cdk_utils.helpers import (
+    prepare_s3_path,
 )
 
 
@@ -82,46 +85,7 @@ def step_invoke_lambda_function(
     return lambda_state
 
 
-def prepare_arg_for_jar_step(
-    bucket_ssm: str,
-    file_path: str,
-) -> list:
-    """Prepare execution script args for emr cluster.
-
-    Args:
-        bucket_ssm (str): name of the bucket
-        file_path (str): file path for the script
-
-    Returns:
-        list: jar script format for the emr cluster
-    """
-    jar_args = ["spark-submit", "--deploy-mode", "cluster"]
-    fpath = f"s3://{bucket_ssm}/{file_path}"
-
-    jar_args.append(fpath)
-
-    return jar_args
-
-
-def prepare_s3_path(
-    bucket_ssm: str,
-    prefix: str,
-) -> str:
-    """Prepare s3 path given bucket name and paritions.
-
-    Args:
-        bucket_ssm (str): bucket name
-        prefix (str): partition path
-
-    Returns:
-        str: full s3 path
-    """
-    path = f"s3://{bucket_ssm}/{prefix}"
-
-    return path
-
-
-def create_sfntask_instance_fleet(
+def create_sfn_tasks_instance_fleet(
     instance_role_type: str,
     instance_type: str,
     target_on_demand_capacity: int = 0,
@@ -137,6 +101,7 @@ def create_sfntask_instance_fleet(
         target_on_demand_capacity (int, optional): number of on demand instances. Defaults to 0.
         target_spot_capacity (int, optional): number of spot instances. Defaults to 0.
         bid_price (str, optional): bid price for spot instance. Defaults to None.
+        weighted_capacity (int, optional):weighted capacity for each instance. Defaults to 0.
 
     Returns:
         ecc.InstanceFleetConfigProperty: instance fleet config
@@ -183,7 +148,7 @@ def create_sfntask_instance_fleet(
     return fleet
 
 
-def create_sfntask_instances(
+def create_sfn_tasks_instances(
     ec2_subnet_id: str,
     emr_managed_master_security_group: str,
     emr_managed_slave_security_group: str,
@@ -237,7 +202,7 @@ def create_sfntask_instances(
     return instances
 
 
-def create_sfntask_emr_cluster(
+def create_sfn_tasks_emr_cluster(
     scope: Stack,
     step_name: str,
     cluster_name: str,
@@ -312,7 +277,7 @@ def create_sfntask_emr_cluster(
     return cluster
 
 
-def add_sfntask_emr_step(
+def add_sfn_tasks_emr_step(
     scope: Stack,
     step_name: str,
     jar: str,
@@ -343,7 +308,7 @@ def add_sfntask_emr_step(
     return emr_step
 
 
-def terminate_sfntask_emr_cluster(
+def terminate_sfn_tasks_emr_cluster(
     scope: Stack,
     step_name: str,
 ) -> etc:
