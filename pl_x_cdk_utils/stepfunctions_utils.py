@@ -40,7 +40,7 @@ def deploy_state_machine(
         name=f"{name}Log"
         )
     state_machine = sfn.StateMachine(
-            construct, f"profile-for-state-machine-{state_machine_name}",
+            construct, f"profile-for-state-machine-{name}",
             state_machine_name=name,
             definition=definition, role=role,
             logs=sfn.LogOptions(destination=log_group, level=log_level)
