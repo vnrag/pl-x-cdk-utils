@@ -2,19 +2,22 @@ from aws_cdk import aws_stepfunctions as sfn
 from aws_cdk import aws_stepfunctions_tasks as sfn_tasks
 
 
-def get_state_machine_from_arn(construct, state_machine_name):
+def get_state_machine_from_arn(construct, state_machine_name, id=None):
     """
     Get state machine by ARN
     :param construct: object
                       Stack Scope
     :param state_machine_name: string
                        Name of the state machine
+    :param id: string
+                logical id of the cdk construct
     :return: object
                 State machine object
     """
+    param_id = id if id else f"profile-for-state-machine-{state_machine_name}"
     state_machine = sfn.StateMachine.from_state_machine_arn(
         construct,
-        f"profile-for-state-machine-{state_machine_name}",
+        param_id,
         f"arn:aws:states:{construct.region}:"
         f"{construct.account}:stateMachine:{state_machine_name}",
     )

@@ -1,7 +1,4 @@
-from aws_cdk import (
-    pipelines,
-    Environment
-)
+from aws_cdk import pipelines, Environment
 
 
 def add_manual_approve_step(name):
@@ -15,7 +12,7 @@ def add_manual_approve_step(name):
     return pipelines.ManualApprovalStep(f"Approve {name}")
 
 
-def get_codepipeline(construct, repo_name, synth_step):
+def get_codepipeline(construct, repo_name, synth_step, id=None):
     """
     Codepipeline constrict for given repo and synth step
     :param construct: object
@@ -24,20 +21,24 @@ def get_codepipeline(construct, repo_name, synth_step):
                       Name of the repo
     :param synth_step: object
                        Codebuild or ShellStep or any other..
+    :param id: string
+                logical id of the cdk construct
     :return: object
              Pipeline object
     """
+    param_id = id if id else f"profile-{repo_name}"
     pipeline = pipelines.CodePipeline(
-        construct, f"profile-{repo_name}",
+        construct,
+        param_id,
         pipeline_name=repo_name,
         cross_account_keys=True,
         self_mutation=True,
-        synth=synth_step
+        synth=synth_step,
     )
     return pipeline
 
 
-def get_github_connection(repo, branch, codestar_arn, owner='vnrag'):
+def get_github_connection(repo, branch, codestar_arn, owner="vnrag"):
     """
     Get github connection with given codestar arn
     :param repo: string
@@ -52,14 +53,14 @@ def get_github_connection(repo, branch, codestar_arn, owner='vnrag'):
              Github connection object
     """
     github_connection = pipelines.CodePipelineSource.connection(
-        f"{owner}/{repo}", branch,
-        connection_arn=codestar_arn
+        f"{owner}/{repo}", branch, connection_arn=codestar_arn
     )
     return github_connection
 
 
-def get_codebuild_step(git_source, commands, build_step='Synth',
-                       submodules={}, role_policy_statements=[]):
+def get_codebuild_step(
+    git_source, commands, build_step="Synth", submodules={}, role_policy_statements=[]
+):
     """
     Codebuild step needed for codepipeline
     :param git_source: object
@@ -76,16 +77,24 @@ def get_codebuild_step(git_source, commands, build_step='Synth',
              Codebuild step
     """
     codebuild_step = pipelines.CodeBuildStep(
-        build_step, input=git_source,
+        build_step,
+        input=git_source,
         additional_inputs=submodules,
         commands=commands,
-        role_policy_statements=role_policy_statements
+        role_policy_statements=role_policy_statements,
     )
     return codebuild_step
 
 
-def add_pipeline_stage(pipeline, stage, scope, account_details,
-                       pre_step_sequence=[], pre_stage=None, post_stage=None):
+def add_pipeline_stage(
+    pipeline,
+    stage,
+    scope,
+    account_details,
+    pre_step_sequence=[],
+    pre_stage=None,
+    post_stage=None,
+):
     """
     Add stage on the pipeline object
     :param pipeline: object
@@ -105,15 +114,15 @@ def add_pipeline_stage(pipeline, stage, scope, account_details,
     :return: object
              Pipeline object with stage
     """
-    stage = pipeline.add_stage(stage(
-        scope,
-        account_details['name'],
-        env=Environment(
-            account=account_details['id'],
-            region=account_details['region']
+    stage = pipeline.add_stage(
+        stage(
+            scope,
+            account_details["name"],
+            env=Environment(
+                account=account_details["id"], region=account_details["region"]
+            ),
         ),
-    ),
-        pre=pipelines.Step.sequence(pre_step_sequence)
+        pre=pipelines.Step.sequence(pre_step_sequence),
     )
     if pre_stage:
         stage.add_pre(pre_stage)

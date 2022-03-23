@@ -1,13 +1,21 @@
-from aws_cdk import (
-    aws_events as events,
-    aws_events_targets as targets
-)
+from aws_cdk import aws_events as events, aws_events_targets as targets
 
 
-def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
-                   hour="6", month="*", week_day="*", year="*",
-                   event_input={}, cdk_function='state_machine', 
-                   description="", enabled=True):
+def add_event_rule(
+    construct,
+    rule_name,
+    cdk_functionality,
+    id=None,
+    minute="0",
+    hour="6",
+    month="*",
+    week_day="*",
+    year="*",
+    event_input={},
+    cdk_function="state_machine",
+    description="",
+    enabled=True,
+):
     """
     Event rule for the cdk functionalities
     :param construct: object
@@ -16,6 +24,8 @@ def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
                       Name for the rule
     :param cdk_functionality: object
                               CDK handler where we want to implement rule
+    :param id: string
+                logical id of the cdk construct
     :param minute: string
                    Minute for cron
     :param hour: string
@@ -34,23 +44,26 @@ def add_event_rule(construct, rule_name, cdk_functionality, minute="0",
                         event rule enabled status
     :return:
     """
+    param_id = id if id else f"profile-for-event-{rule_name}"
     # Event rule for provided cron values
-    event_rule = events.Rule(construct, f"profile-for-event-{rule_name}",
-                             description=description,
-                             enabled=enabled,
-                             schedule=events.Schedule.cron(
-                                 minute=minute, hour=hour, month=month,
-                                 week_day=week_day, year=year)
-                             )
+    event_rule = events.Rule(
+        construct,
+        param_id,
+        description=description,
+        enabled=enabled,
+        schedule=events.Schedule.cron(
+            minute=minute, hour=hour, month=month, week_day=week_day, year=year
+        ),
+    )
     # Event input
-    if cdk_function == 'state_machine':
+    if cdk_function == "state_machine":
         event_rule.add_target(
             targets.SfnStateMachine(
                 cdk_functionality,
                 input=events.RuleTargetInput.from_object(event_input),
             )
         )
-    if cdk_function == 'lambda':
+    if cdk_function == "lambda":
         event_rule.add_target(
             targets.LambdaFunction(
                 cdk_functionality,

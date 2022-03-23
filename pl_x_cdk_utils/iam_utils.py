@@ -16,7 +16,7 @@ def get_policy_statement(actions, resources=["*"]):
 
 
 def get_added_policies_as_role(
-    construct, role_name, principal, actions_list, resources_list=["*"]
+    construct, role_name, principal, actions_list, resources_list=["*"], id=None
 ):
     """
     :param construct: object
@@ -29,12 +29,15 @@ def get_added_policies_as_role(
                          List of permission actions for the role
     :param resources_list: list
                            List for the resources we want to give the permission
+    :param id: string
+                logical id of the cdk construct
     :return: object
              IAM role object
     """
+    param_id = id if id else f"profile-for-role-{role_name}"
     role = iam.Role(
         construct,
-        f"profile-for-role-{role_name}",
+        param_id,
         role_name=role_name,
         assumed_by=iam.ServicePrincipal(principal),
     )
@@ -44,25 +47,26 @@ def get_added_policies_as_role(
     return role
 
 
-def get_role_from_arn(construct, role_name):
+def get_role_from_arn(construct, role_name, id=None):
     """
     Get role object from the arn with given role name
     :param construct: object
                       Stack Scope
     :param role_name: string
                       IAM role name
+    :param id: string
+                logical id of the cdk construct
     :return: object
              IAM role object
     """
+    param_id = id if id else f"profile-for-role-{role_name}"
     role_arn = f"arn:aws:iam::{construct.account}:role/{role_name}"
-    role = iam.Role.from_role_arn(
-        construct, f"profile-for-role-{role_name}", role_arn=role_arn
-    )
+    role = iam.Role.from_role_arn(construct, param_id, role_arn=role_arn)
     return role
 
 
 def create_role_with_managed_policy(
-    construct, role_name, principal, policies_list, role_exists=False, arn=None
+    construct, role_name, principal, policies_list, id=None, role_exists=False, arn=None
 ):
     """
     Create role object and add aws managed policy to it
@@ -74,6 +78,8 @@ def create_role_with_managed_policy(
                       AWS principal name
     :param policies_list: list
                           list of AWS managed policies
+    :param id: string
+                logical id of the cdk construct
     :param role_exists: boolean
                         flag if role exists before
     :param arn: string
@@ -81,12 +87,13 @@ def create_role_with_managed_policy(
     :return: object
              IAM role object
     """
+    param_id = id if id else f"profile-for-role-{role_name}"
     role = (
         iam.Role.from_role_arn(construct, role_name, role_arn=arn)
         if role_exists
         else iam.Role(
             construct,
-            f"profile-for-role-{role_name}",
+            param_id,
             role_name=role_name,
             assumed_by=iam.ServicePrincipal(principal),
         )
@@ -99,7 +106,14 @@ def create_role_with_managed_policy(
 
 
 def create_role_with_inline_policy(
-    construct, role_name, principal, actions, resource, role_exists=False, arn=None
+    construct,
+    role_name,
+    principal,
+    actions,
+    resource,
+    id=None,
+    role_exists=False,
+    arn=None,
 ):
     """
     Create role object and add aws managed policy to it
@@ -113,6 +127,8 @@ def create_role_with_inline_policy(
                           list of AWS inline policy actions
     :param resource: list
                       IAM resources
+    :param id: string
+                logical id of the cdk construct
     :param role_exists: boolean
                         flag if role exists before
     :param arn: string
@@ -120,13 +136,13 @@ def create_role_with_inline_policy(
     :return: object
              IAM role object
     """
-
+    param_id = id if id else f"profile-for-role-{role_name}"
     role = (
         iam.Role.from_role_arn(construct, role_name, role_arn=arn)
         if role_exists
         else iam.Role(
             construct,
-            f"profile-for-role-{role_name}",
+            param_id,
             role_name=role_name,
             assumed_by=iam.ServicePrincipal(principal),
         )

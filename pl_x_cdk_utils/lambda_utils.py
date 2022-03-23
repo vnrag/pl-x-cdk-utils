@@ -4,6 +4,7 @@ from aws_cdk import Duration, aws_lambda as _lambda
 def implement_lambda_function(
     construct,
     lambda_path,
+    id=None,
     roles=None,
     handler=None,
     layers_list=None,
@@ -19,6 +20,8 @@ def implement_lambda_function(
                       Stack Scope
     :param lambda_path: string
                         path for lambda asset
+    :param id: string
+                logical id of the cdk construct
     :param roles: object
                   Role object assumed for lambda
     :param handler: string
@@ -39,14 +42,14 @@ def implement_lambda_function(
     :return: object
              Lambda handler
     """
-
+    param_id = id if id else f"profile-for-lambda-{function_name}"
     handler = handler if handler else "lambda_handler.lambda_handler"
     memory_size = memory_size if memory_size else 128
     timeout = timeout if timeout else 5
     runtime = runtime if runtime else _lambda.Runtime.PYTHON_3_8
     l_handler = _lambda.Function(
         construct,
-        f"profile-for-lambda-{function_name}",
+        param_id,
         runtime=runtime,
         code=_lambda.Code.from_asset(lambda_path),
         handler=handler,
@@ -60,7 +63,7 @@ def implement_lambda_function(
     return l_handler
 
 
-def get_layer_from_arn(construct, layer_name, version):
+def get_layer_from_arn(construct, layer_name, version, id=None):
     """
     Get lambda layer by ARN
     :param construct: object
@@ -69,31 +72,37 @@ def get_layer_from_arn(construct, layer_name, version):
                        Name of the layer
     :param version: string
                     Version for the layer
+    :param id: string
+                logical id of the cdk construct
     :return: object
              Lambda layer object
     """
+    param_id = id if id else f"profile-for-lambda-layer-{layer_name}"
     lambda_layer = _lambda.LayerVersion.from_layer_version_arn(
         construct,
-        f"profile-for-lambda-layer-{layer_name}",
+        param_id,
         f"arn:aws:lambda:{construct.region}:{construct.account}:layer"
         f":{layer_name}:{version}",
     )
     return lambda_layer
 
 
-def get_lambda_from_arn(construct, function_name):
+def get_lambda_from_arn(construct, function_name, id=None):
     """
     Get lambda function by ARN
     :param construct: object
                       Stack Scope
     :param function_name: string
                        Name of the function
+    :param id: string
+                logical id of the cdk construct
     :return: object
              Lambda function object
     """
+    param_id = id if id else f"profile-for-lambda-function-{function_name}"
     lambda_function = _lambda.Function.from_function_arn(
         construct,
-        f"profile-for-lambda-function-{function_name}",
+        param_id,
         f"arn:aws:lambda:{construct.region}:{construct.account}:function:{function_name}",
     )
     return lambda_function
