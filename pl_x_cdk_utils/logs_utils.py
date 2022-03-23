@@ -1,7 +1,12 @@
-from aws_cdk import aws_logs as logs, RemovalPolicy
+from aws_cdk import (
+    RemovalPolicy,
+    aws_logs as logs,
+    aws_logs_destinations as destinations
+)
 
 
-def create_log_group(construct, name, id=None, removal_policy=RemovalPolicy.DESTROY):
+def create_log_group(construct, name, id=None,
+                     removal_policy=RemovalPolicy.DESTROY):
     """
     Create AWS log group
     :param construct: object
@@ -41,3 +46,42 @@ def get_log_group_from_name(construct, name, id=None):
     )
 
     return log_group
+
+
+def add_lambda_log_subscription(construct, log_group, lambda_handler,
+                                filter_pattern=None):
+    """
+    Implement lambda subscription to log
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    log_group : object
+                Log group object
+    lambda_handler : object
+                     Lambda object for the subscription
+    filter_pattern : object
+                     Filter pattern object for the subscription
+    Returns
+    -------
+
+    """
+    filter_pattern = filter_pattern if filter_pattern else \
+        logs.FilterPattern.any(
+                logs.FilterPattern.string_value(
+                        json_field="$.type",
+                        comparison="=",
+                        value="*Succeeded*"
+                        ),
+                logs.FilterPattern.string_value(
+                        json_field="$.type",
+                        comparison="=",
+                        value="*Failed*"
+                        )
+                )
+    logs.SubscriptionFilter(
+        construct, f"profile-for-{log_group.log_group_name}-subscription",
+        log_group=log_group,
+        destination=destinations.LambdaDestination(lambda_handler),
+        filter_pattern=filter_pattern)
+

@@ -53,7 +53,7 @@ def add_event_rule(
         enabled=enabled,
         schedule=events.Schedule.cron(
             minute=minute, hour=hour, month=month, week_day=week_day, year=year
-        ),
+        )
     )
     # Event input
     if cdk_function == "state_machine":

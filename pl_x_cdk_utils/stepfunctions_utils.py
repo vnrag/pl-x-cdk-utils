@@ -1,5 +1,6 @@
 from aws_cdk import (
     Stack,
+    Duration,
     aws_iam as iam,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as sfn_tasks,
@@ -14,9 +15,8 @@ from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
 
 
-def deploy_state_machine(
-    construct, name, definition, role, log_group=None, log_level=sfn.LogLevel.ALL
-):
+def deploy_state_machine(construct, name, definition, role, log_group=None,
+                         log_level=sfn.LogLevel.ALL):
     """
      Deploy state machine
      :param construct: object
@@ -35,7 +35,8 @@ def deploy_state_machine(
              State machine object
     """
     log_group = (
-        log_group if log_group else create_log_group(construct, name=f"{name}Log")
+        log_group if log_group else create_log_group(construct,
+                                                     name=f"{name}Log")
     )
     state_machine = sfn.StateMachine(
         construct,
@@ -182,9 +183,29 @@ def get_condition_state(
     if type == "bool":
         state = conditional_state.when(
             fn.Condition.boolean_equals(comparison_path, comparison_val),
-            transition_state,
+            transition_state
         )
 
+    return state
+
+
+def get_wait_state(construct, state_name, duration):
+    """
+    Get wait state for step function
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for state
+    duration : int
+               Duration for the wait
+    Returns
+    -------
+    State object
+    """
+    state = sfn.Wait(construct, state_name, time=sfn.WaitTime.duration(
+            Duration.seconds(duration)))
     return state
 
 
@@ -203,8 +224,8 @@ def get_succeed_state(construct, state_name="Succeeded"):
 
 
 def get_failed_state(
-    construct, state_name="Failed", cause="One of the State Failed", error="Failed"
-):
+    construct, state_name="Failed", cause="One of the State Failed",
+        error="Failed"):
     """
      Get Failed state
     :param construct: object
@@ -220,6 +241,37 @@ def get_failed_state(
     """
     failed_state = sfn.Fail(construct, state_name, cause=cause, error=error)
     return failed_state
+
+
+def get_sns_publish_state(construct, state_name, topic, message, path=True,
+                          result_path="$.sns"):
+    """
+    Get SNS publish state for step function
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name of the state in the state machine
+    topic : object
+            SNS Topic
+    message : string/dict
+              Either string or dict for the message object
+    path : bool
+           Flag to determine if the message is from Json or Path in state
+           machine
+    result_path : string
+                  Path for the state result
+    Returns
+    -------
+    State object
+    """
+    message = sfn.TaskInput.from_json_path_at(message) if path else \
+        sfn.TaskInput.from_object(message)
+    state = sfn_tasks.SnsPublish(
+            construct, state_name, topic=topic,
+            message=message, result_path=result_path)
+    return state
 
 
 def create_sfn_tasks_instance_fleet(
@@ -250,7 +302,8 @@ def create_sfn_tasks_instance_fleet(
 
     if instance_role_type == "TASK":
         fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
+            instance_fleet_type=eval(
+                    f"ecc.InstanceRoleType.{instance_role_type}"),
             # the properties below are optional
             instance_type_configs=[
                 ecc.InstanceTypeConfigProperty(
@@ -259,19 +312,19 @@ def create_sfn_tasks_instance_fleet(
                     weighted_capacity=weighted_capacity,
                 )
             ],
-            launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
+            launch_specifications=
+            ecc.InstanceFleetProvisioningSpecificationsProperty(
                 spot_specification=ecc.SpotProvisioningSpecificationProperty(
                     timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
-                    timeout_duration_minutes=600,
-                ),
-            ),
+                    timeout_duration_minutes=600)),
             name=instance_role_type,
             target_on_demand_capacity=target_on_demand_capacity,
-            target_spot_capacity=target_spot_capacity,
+            target_spot_capacity=target_spot_capacity
         )
     else:
         fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
+            instance_fleet_type=eval(
+                    f"ecc.InstanceRoleType.{instance_role_type}"),
             # the properties below are optional
             instance_type_configs=[
                 ecc.InstanceTypeConfigProperty(
@@ -313,10 +366,13 @@ def create_sfn_tasks_instances(
         else "m5.xlarge"
     )
     core_instance_type = (
-        config["core_instance_type"] if "core_instance_type" in config else "m5.xlarge"
+        config["core_instance_type"] if "core_instance_type" in config
+        else "m5.xlarge"
     )
-    core_on_demand = config["core_on_demand"] if "core_on_demand" in config else 1
-    core_weighted = config["core_weighted"] if "core_weighted" in config else 1
+    core_on_demand = config["core_on_demand"] if "core_on_demand" in config \
+        else 1
+    core_weighted = config["core_weighted"] if "core_weighted" in config \
+        else 1
     core_spot = config["core_spot"] if "core_spot" in config else 0
 
     instances = ecc.InstancesConfigProperty(
@@ -421,7 +477,8 @@ def create_sfn_tasks_emr_cluster(
         ],
         log_uri=prepare_s3_path(emr_config_bucket, log_uri),
         release_label=release_label,
-        scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
+        scale_down_behavior=
+        ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         # tags=[CfnTag(key="key", value="value")],
         visible_to_all_users=True,
         result_path="$.cluster",
