@@ -23,7 +23,7 @@ def create_log_group(construct, name, id=None, removal_policy=RemovalPolicy.DEST
     return log_group
 
 
-def get_log_group_from_name(construct, name):
+def get_log_group_from_name(construct, name, id=None):
     """
     get log group with given name
     :param construct: object
