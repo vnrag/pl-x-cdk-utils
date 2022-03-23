@@ -49,7 +49,7 @@ def get_log_group_from_name(construct, name, id=None):
 
 
 def add_lambda_log_subscription(construct, log_group, lambda_handler,
-                                filter_pattern=None):
+                                profile_name, filter_pattern=None):
     """
     Implement lambda subscription to log
     Parameters
@@ -60,14 +60,14 @@ def add_lambda_log_subscription(construct, log_group, lambda_handler,
                 Log group object
     lambda_handler : object
                      Lambda object for the subscription
+    profile_name : string
+                   Profile name for the subscription
     filter_pattern : object
                      Filter pattern object for the subscription
     Returns
     -------
 
     """
-    profile_name = f"profile-for-" \
-                   f"{construct['stack_name']}-lambda-log-subscription"
     filter_pattern = filter_pattern if filter_pattern else \
         logs.FilterPattern.any(
                 logs.FilterPattern.string_value(
