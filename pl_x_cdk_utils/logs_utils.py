@@ -66,6 +66,8 @@ def add_lambda_log_subscription(construct, log_group, lambda_handler,
     -------
 
     """
+    profile_name = f"profile-for-" \
+                   f"{construct['stack_name']}-lambda-log-subscription"
     filter_pattern = filter_pattern if filter_pattern else \
         logs.FilterPattern.any(
                 logs.FilterPattern.string_value(
@@ -80,7 +82,7 @@ def add_lambda_log_subscription(construct, log_group, lambda_handler,
                         )
                 )
     logs.SubscriptionFilter(
-        construct, f"profile-for-{log_group.log_group_name}-subscription",
+        construct, profile_name,
         log_group=log_group,
         destination=destinations.LambdaDestination(lambda_handler),
         filter_pattern=filter_pattern)
