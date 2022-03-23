@@ -68,6 +68,7 @@ def get_role_from_arn(construct, role_name, id=None):
 def create_role_with_managed_policy(
     construct, role_name, principal, policies_list, id=None, role_exists=False, arn=None
 ):
+
     """
     Create role object and add aws managed policy to it
     :param construct: object

@@ -77,3 +77,18 @@ def retrieve_ssm_string_parameter_value(
     )
 
     return val
+
+
+def retrieve_ssm_string_parameter_from_lookup(construct, parameter_name):
+    """
+
+    :param construct: object
+                      Stack Scope
+    :param parameter_name: string
+                           SSM parameter name
+    :return: object
+             AWS SSM parameter token object
+    """
+    val = ssm.StringParameter.value_from_lookup(construct, parameter_name)
+
+    return val
