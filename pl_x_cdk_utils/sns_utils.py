@@ -1,4 +1,4 @@
-from aws_cdk import sns
+from aws_cdk import aws_sns as sns
 
 
 def get_sns_topic(construct, topic_name, display_name="Subscription Topic",
