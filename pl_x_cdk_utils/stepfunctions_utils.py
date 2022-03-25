@@ -318,7 +318,7 @@ def get_condition_state(
     """
     if type == "bool":
         state = conditional_state.when(
-            fn.Condition.boolean_equals(comparison_path, comparison_val),
+            sfn.Condition.boolean_equals(comparison_path, comparison_val),
             transition_state
         )
 
