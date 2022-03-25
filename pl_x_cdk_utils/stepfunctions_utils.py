@@ -180,7 +180,7 @@ def get_aws_service_call_state(construct, state_name, action,
               Name for the service
     iam_action : string
                  IAM action for the service
-    iam_resources : string
+    iam_resources : list
                     List of resources for the action
     parameters : object
                  Parameters object for the AWS service
