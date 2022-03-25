@@ -199,6 +199,35 @@ def get_aws_service_call_state(construct, state_name, action,
     return state
 
 
+def get_map_state(construct, state_name, items_path="$.args",
+                  input_path="$.args.arg", result_path="$.map_resp",
+                  max_concurrency=6):
+    """
+    Get map state
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for the state
+    items_path :
+    input_path : string
+                 Input path for the step-function to be triggered
+    result_path : string
+                 Result path for the result after the trigger
+    max_concurrency : int
+                      Max concurrent calls over the iterations
+    Returns
+    -------
+    State object
+    """
+    state = sfn.Map(construct, state_name, items_path=items_path,
+                    input_path=input_path, result_path=result_path,
+                    max_concurrency=max_concurrency
+                    )
+    return state
+
+
 def get_custom_state(construct, state_name, state_json):
     """
      Get the custom state with the provided json
