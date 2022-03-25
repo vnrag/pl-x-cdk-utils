@@ -157,6 +157,37 @@ def get_choice_state(construct, state_name):
     return state
 
 
+def get_pass_state(construct, state_name, result_path="$.pass_state",
+                   comment="Pass state for step-function",
+                   result={}, path=False):
+    """
+    Get the Pass state for Step-Function
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for the state
+    result_path : string
+                  Path for the result
+    comment : string
+              Comment assigned for the pass state
+    result : object/string
+             Result for the pass state
+    path : bool
+           Flag to check if the given result is object or string
+    Returns
+    -------
+    State object
+    """
+    result = sfn.Result.from_json_path_at(result) if path \
+        else sfn.Result.from_object(result)
+    state = sfn.Pass(
+            construct, state_name, comment=comment,
+            result_path=result_path, result=result)
+    return state
+
+
 def get_condition_state(
     conditional_state,
     comparison_path,
