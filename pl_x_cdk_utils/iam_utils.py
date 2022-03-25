@@ -35,15 +35,18 @@ def get_added_policies_as_role(
              IAM role object
     """
     param_id = id if id else f"profile-for-role-{role_name}"
-    role = iam.Role(
-        construct,
-        param_id,
-        role_name=role_name,
-        assumed_by=iam.ServicePrincipal(principal),
-    )
-    role.add_to_policy(
-        iam.PolicyStatement(resources=resources_list, actions=actions_list)
-    )
+    if id:
+        role = get_role_from_arn(construct, role_name, id)
+    else:
+        role = iam.Role(
+            construct,
+            param_id,
+            role_name=role_name,
+            assumed_by=iam.ServicePrincipal(principal),
+        )
+        role.add_to_policy(
+            iam.PolicyStatement(resources=resources_list, actions=actions_list)
+                )
     return role
 
 
