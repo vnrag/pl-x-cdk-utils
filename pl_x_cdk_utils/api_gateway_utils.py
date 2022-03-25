@@ -33,18 +33,40 @@ def deploy_rest_api(
     :return: object
              API object
     """
-    param_id = id if id else f"profile-for-api-{api_name}"
-    description = description if description else f"API for {api_name}"
-    api_cors = api_cors if api_cors else DEFAULT_CORS
-    deploy_options = deploy_options if deploy_options else DEFAULT_DEPLOY_OPTIONS
-    api = api_gateway.RestApi(
-        construct,
-        param_id,
-        rest_api_name=api_name,
-        description=description,
-        default_cors_preflight_options=api_cors,
-        deploy_options=deploy_options,
-    )
+    if id:
+        api = get_api_from_id(construct, id)
+    else:
+        param_id = f"profile-for-api-{api_name}"
+        description = description if description else f"API for {api_name}"
+        api_cors = api_cors if api_cors else DEFAULT_CORS
+        deploy_options = deploy_options if deploy_options else \
+            DEFAULT_DEPLOY_OPTIONS
+        api = api_gateway.RestApi(
+            construct,
+            param_id,
+            rest_api_name=api_name,
+            description=description,
+            default_cors_preflight_options=api_cors,
+            deploy_options=deploy_options
+                )
+    return api
+
+
+def get_api_from_id(construct, api_id):
+    """
+    Get api from given id
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    api_id : string
+             Rest API id
+    Returns
+    -------
+    API object
+    """
+    param_id = f"get-api-from-id-{api_id}"
+    api = api_gateway.RestApi.from_rest_api_id(construct, param_id, api_id)
     return api
 
 
@@ -91,7 +113,8 @@ def add_resource_to_api(api_object, name, root=True, api_cors=None):
     return updated_api
 
 
-def add_usage_plan_to_api(api_object, name, id=None, quota=None, throttle=None):
+def add_usage_plan_to_api(api_object, name, id=None, quota=None,
+                          throttle=None):
     """
     Add usage plan to API
     :param api_object: object

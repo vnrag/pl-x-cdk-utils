@@ -1,5 +1,5 @@
 from aws_cdk.aws_kinesisfirehose import CfnDeliveryStream as Firehose
-
+from aws_cdk.aws_kinesisfirehose_alpha import DeliveryStream
 
 dynamic_output_path = (
     "/year=!{timestamp:yyyy}/month=!{timestamp:MM}/!"
@@ -9,6 +9,27 @@ dynamic_error_path = (
     "_failures/!{firehose:error-output-type}/year=!"
     "{timestamp:yyyy}/month=!{timestamp:MM}/!{timestamp:dd}"
 )
+
+
+def get_delivery_stream_from_arn(construct, stream_name):
+    """
+    Get delivery stream from arn
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    stream_name : string
+                  Name of the delivery stream
+    Returns
+    -------
+    S3 firehose object
+    """
+    arn = f"arn: aws:firehose:{construct.region}:" \
+          f"{construct.account}:deliverystream/{stream_name}"
+    param_id = f"get-delivery-stream-{stream_name}-by-arn"
+    delivery_stream = DeliveryStream.from_delivery_stream_arn(construct,
+                                                              param_id, arn)
+    return delivery_stream
 
 
 def get_delivery_stream_for_s3_destination(construct, name, config, id=None):
@@ -25,13 +46,17 @@ def get_delivery_stream_for_s3_destination(construct, name, config, id=None):
     :return: object
             S3 firehose object
     """
-    param_id = id if id else f"profile-for-delivery-stream-{name}"
-    s3_firehose_delivery_stream = Firehose(
-        construct,
-        param_id,
-        delivery_stream_name=name,
-        extended_s3_destination_configuration=config,
-    )
+    if id:
+        s3_firehose_delivery_stream = get_delivery_stream_from_arn(
+                construct, name)
+    else:
+        param_id = f"profile-for-delivery-stream-{name}"
+        s3_firehose_delivery_stream = Firehose(
+            construct,
+            param_id,
+            delivery_stream_name=name,
+            extended_s3_destination_configuration=config,
+        )
     return s3_firehose_delivery_stream
 
 

@@ -44,29 +44,53 @@ def add_event_rule(
                         event rule enabled status
     :return:
     """
-    param_id = id if id else f"profile-for-event-{rule_name}"
-    # Event rule for provided cron values
-    event_rule = events.Rule(
-        construct,
-        param_id,
-        description=description,
-        enabled=enabled,
-        schedule=events.Schedule.cron(
-            minute=minute, hour=hour, month=month, week_day=week_day, year=year
-        )
-    )
-    # Event input
-    if cdk_function == "state_machine":
-        event_rule.add_target(
-            targets.SfnStateMachine(
-                cdk_functionality,
-                input=events.RuleTargetInput.from_object(event_input),
+    if id:
+        return get_event_rule_from_arn(construct, rule_name)
+    else:
+        param_id = id if id else f"profile-for-event-{rule_name}"
+        # Event rule for provided cron values
+        event_rule = events.Rule(
+            construct,
+            param_id,
+            description=description,
+            enabled=enabled,
+            schedule=events.Schedule.cron(
+                minute=minute, hour=hour, month=month, week_day=week_day,
+                    year=year
             )
         )
-    if cdk_function == "lambda":
-        event_rule.add_target(
-            targets.LambdaFunction(
-                cdk_functionality,
-                event=events.RuleTargetInput.from_object(event_input),
+        # Event input
+        if cdk_function == "state_machine":
+            event_rule.add_target(
+                targets.SfnStateMachine(
+                    cdk_functionality,
+                    input=events.RuleTargetInput.from_object(event_input),
+                )
             )
-        )
+        if cdk_function == "lambda":
+            event_rule.add_target(
+                targets.LambdaFunction(
+                    cdk_functionality,
+                    event=events.RuleTargetInput.from_object(event_input),
+                )
+            )
+
+
+def get_event_rule_from_arn(construct, rule_name):
+    """
+    Get event rule from arn
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    rule_name : string
+                Name of the event rule
+    Returns
+    -------
+    Event rule object
+    """
+    rule_id = f"get-{rule_name}-from-arn"
+    arn = f"arn:aws:events:{construct.region}:{construct.account}:rule" \
+          f"/{rule_name}"
+    event_rule = events.Rule.from_event_rule_arn(scope, rule_id, arn)
+    return event_rule

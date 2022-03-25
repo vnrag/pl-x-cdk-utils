@@ -1,6 +1,21 @@
 from aws_cdk import aws_glue, aws_glue_alpha as glue
 
 
+def get_glue_crawler_from_arn(construct, crawler_name):
+    """
+
+    Parameters
+    ----------
+    construct :
+    crawler_name :
+
+    Returns
+    -------
+
+    """
+    pass
+
+
 def create_glue_crawler(
     construct,
     name,
