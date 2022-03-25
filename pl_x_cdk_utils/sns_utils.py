@@ -21,15 +21,11 @@ def get_sns_topic(construct, topic_name, display_name="Subscription Topic",
     -------
     SNS topic object
     """
-    if id:
-        topic = sns.Topic.from_topic_arn(
-                construct, id,
-                topic_arn=f"arn:aws:sns:{construct.region}:"
-                          f"{construct.account}:{topic_name}")
-    else:
-        topic = sns.Topic(
-            construct, f"Topic{topic_name}",
-            display_name=display_name,
-            fifo=fifo,
-            topic_name=topic_name)
+    param_id = id if id else f"Topic{topic_name}"
+    topic = sns.Topic(
+        construct, param_id,
+        display_name=display_name,
+        fifo=fifo,
+        topic_name=topic_name)
+
     return topic
