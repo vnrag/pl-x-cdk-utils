@@ -36,7 +36,7 @@ def get_added_policies_as_role(
     """
     param_id = id if id else f"profile-for-role-{role_name}"
     if id:
-        role = get_role_from_arn(construct, role_name, id)
+        role = get_role_from_arn(construct, role_name)
     else:
         role = iam.Role(
             construct,
