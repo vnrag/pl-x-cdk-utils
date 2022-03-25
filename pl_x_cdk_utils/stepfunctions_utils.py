@@ -151,14 +151,52 @@ def get_trigger_step_function_state(construct, state_name, state_machine,
     -------
     State object
     """
-    invoke_sfn_state = sfn_tasks.StepFunctionsStartExecution(
+    state = sfn_tasks.StepFunctionsStartExecution(
         construct, state_name,
         state_machine=state_machine,
         integration_pattern=integration_pattern,
         input_path=input_path,
         result_path=result_path
         )
-    return invoke_sfn_state
+    return state
+
+
+def get_aws_service_call_state(construct, state_name, action,
+                               service="appflow",
+                               iam_action="appflow:StartFlow",
+                               iam_resources=["*"],
+                               parameters={"FlowName.$": "$"}):
+    """
+    Get AWS service call state
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for the state
+    action : string
+             Action on the call
+    service : string
+              Name for the service
+    iam_action : string
+                 IAM action for the service
+    iam_resources : string
+                    List of resources for the action
+    parameters : object
+                 Parameters object for the AWS service
+    Returns
+    -------
+    State object
+    """
+    state = sfn_tasks.CallAwsService(
+                construct, state_name,
+                action=action,
+                service=service,
+                iam_action=iam_action,
+                iam_resources=iam_resources,
+                parameters=parameters
+            )
+    return state
 
 
 def get_custom_state(construct, state_name, state_json):
