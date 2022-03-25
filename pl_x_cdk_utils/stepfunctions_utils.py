@@ -292,7 +292,7 @@ def get_condition_state(
     return state
 
 
-def get_wait_state(construct, state_name, duration):
+def get_wait_state(construct, state_name, duration, comment=None):
     """
     Get wait state for step function
     Parameters
@@ -303,12 +303,15 @@ def get_wait_state(construct, state_name, duration):
                  Name for state
     duration : int
                Duration for the wait
+    comment : string
+              Comment for the state
     Returns
     -------
     State object
     """
+    comment = comment if comment else f"Waiting For {duration}"
     state = sfn.Wait(construct, state_name, time=sfn.WaitTime.duration(
-            Duration.seconds(duration)))
+            Duration.seconds(duration)), comment=comment)
     return state
 
 
