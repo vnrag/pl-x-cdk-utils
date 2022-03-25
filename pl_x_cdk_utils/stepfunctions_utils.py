@@ -127,6 +127,40 @@ def step_invoke_lambda_function(
     return lambda_state
 
 
+def get_trigger_step_function_state(construct, state_name, state_machine,
+                                    input_path='$', result_path='$.sfn_invoke',
+                                    integration_pattern=
+                                    sfn.IntegrationPattern.RUN_JOB):
+    """
+    Trigger state machine
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for the state
+    state_machine : object
+                    State machine object
+    input_path : string
+                 Input path for the step-function to be triggered
+    result_path : string
+                 Result path for the result after the trigger
+    integration_pattern : object
+                          Integration pattern object
+    Returns
+    -------
+    State object
+    """
+    invoke_sfn_state = sfn_tasks.StepFunctionsStartExecution(
+        construct, state_name,
+        state_machine=state_machine,
+        integration_pattern=integration_pattern,
+        input_path=input_path,
+        result_path=result_path
+        )
+    return invoke_sfn_state
+
+
 def get_custom_state(construct, state_name, state_json):
     """
      Get the custom state with the provided json
