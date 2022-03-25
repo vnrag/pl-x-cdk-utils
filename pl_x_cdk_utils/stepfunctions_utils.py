@@ -15,8 +15,8 @@ from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
 
 
-def deploy_state_machine(construct, name, definition, role, log_group=None,
-                         log_level=sfn.LogLevel.ALL):
+def deploy_state_machine(construct, name, definition, role=None,
+                         log_group=None, log_level=sfn.LogLevel.ALL):
     """
      Deploy state machine
      :param construct: object
@@ -34,18 +34,26 @@ def deploy_state_machine(construct, name, definition, role, log_group=None,
     :return: object
              State machine object
     """
-    log_group = (
-        log_group if log_group else create_log_group(construct,
-                                                     name=f"{name}Log")
-    )
-    state_machine = sfn.StateMachine(
-        construct,
-        f"profile-for-state-machine-{name}",
-        state_machine_name=name,
-        definition=definition,
-        role=role,
-        logs=sfn.LogOptions(destination=log_group, level=log_level),
-    )
+    log_group = log_group if log_group else \
+        create_log_group(construct, name=f"{name}Log")
+
+    if role:
+        state_machine = sfn.StateMachine(
+            construct,
+            f"profile-for-state-machine-{name}",
+            state_machine_name=name,
+            definition=definition,
+            role=role,
+            logs=sfn.LogOptions(destination=log_group, level=log_level)
+            )
+    else:
+        state_machine = sfn.StateMachine(
+                construct,
+                f"profile-for-state-machine-{name}",
+                state_machine_name=name,
+                definition=definition,
+                logs=sfn.LogOptions(destination=log_group, level=log_level)
+                )
     return state_machine
 
 
@@ -383,7 +391,7 @@ def get_failed_state(
 
 
 def get_sns_publish_state(construct, state_name, topic, message, path=True,
-                          result_path="$.sns"):
+                          result_path="$.sns", subject="SNS Message"):
     """
     Get SNS publish state for step function
     Parameters
@@ -401,6 +409,8 @@ def get_sns_publish_state(construct, state_name, topic, message, path=True,
            machine
     result_path : string
                   Path for the state result
+    subject: string
+             Subject to be passed on message
     Returns
     -------
     State object
@@ -409,7 +419,8 @@ def get_sns_publish_state(construct, state_name, topic, message, path=True,
         sfn.TaskInput.from_object(message)
     state = sfn_tasks.SnsPublish(
             construct, state_name, topic=topic,
-            message=message, result_path=result_path)
+            message=message, result_path=result_path,
+            subject=subject)
     return state
 
 
