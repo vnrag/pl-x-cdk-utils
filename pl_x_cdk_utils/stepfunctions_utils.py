@@ -135,10 +135,10 @@ def step_invoke_lambda_function(
     return lambda_state
 
 
-def get_trigger_step_function_state(construct, state_name, state_machine,
-                                    input_path='$', result_path='$.sfn_invoke',
-                                    integration_pattern=
-                                    sfn.IntegrationPattern.RUN_JOB):
+def get_trigger_step_function_state(
+        construct, state_name, state_machine, input_path='$',
+        result_path='$.sfn_invoke', output_path="$.output",
+        integration_pattern=sfn.IntegrationPattern.RUN_JOB):
     """
     Trigger state machine
     Parameters
@@ -153,6 +153,8 @@ def get_trigger_step_function_state(construct, state_name, state_machine,
                  Input path for the step-function to be triggered
     result_path : string
                  Result path for the result after the trigger
+    output_path : string
+                 Output path for the result after the trigger
     integration_pattern : object
                           Integration pattern object
     Returns
@@ -164,7 +166,8 @@ def get_trigger_step_function_state(construct, state_name, state_machine,
         state_machine=state_machine,
         integration_pattern=integration_pattern,
         input_path=input_path,
-        result_path=result_path
+        result_path=result_path,
+        output_path=output_path
         )
     return state
 
