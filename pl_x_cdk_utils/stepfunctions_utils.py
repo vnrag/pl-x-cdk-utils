@@ -15,7 +15,7 @@ from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
 
 
-def deploy_state_machine(construct, name, definition, role=None,
+def deploy_state_machine(construct, name, definition, id=None, role=None,
                          log_group=None, log_level=sfn.LogLevel.ALL):
     """
      Deploy state machine
@@ -25,6 +25,8 @@ def deploy_state_machine(construct, name, definition, role=None,
                   Name for the state machine
      :param definition: object
                          Task definition object
+     :param id: string
+                Stack id
      :param role: object
                   IAM Role object
      :param log_group: object
@@ -36,11 +38,11 @@ def deploy_state_machine(construct, name, definition, role=None,
     """
     log_group = log_group if log_group else \
         create_log_group(construct, name=f"{name}Log")
-
+    param_id = id if id else f"profile-for-state-machine-{name}"
     if role:
         state_machine = sfn.StateMachine(
             construct,
-            f"profile-for-state-machine-{name}",
+            param_id,
             state_machine_name=name,
             definition=definition,
             role=role,
@@ -49,7 +51,7 @@ def deploy_state_machine(construct, name, definition, role=None,
     else:
         state_machine = sfn.StateMachine(
                 construct,
-                f"profile-for-state-machine-{name}",
+                param_id,
                 state_machine_name=name,
                 definition=definition,
                 logs=sfn.LogOptions(destination=log_group, level=log_level)
