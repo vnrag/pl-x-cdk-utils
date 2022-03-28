@@ -49,6 +49,7 @@ def add_event_rule(
     event_rule = events.Rule(
         construct,
         param_id,
+        rule_name=rule_name,
         description=description,
         enabled=enabled,
         schedule=events.Schedule.cron(
