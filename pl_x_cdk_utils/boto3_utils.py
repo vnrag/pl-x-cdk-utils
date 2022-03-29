@@ -66,6 +66,18 @@ def invoke_lambda(lambda_func, payload={}):
     return out
 
 
+# Function to Upload file to s3
+def upload_file_to_s3(file_path, bucket_name, prefix, region='eu-central-1'):
+    s3_client = boto3.client("s3", region_name=region)
+    try:
+        response = s3_client.upload_file(file_path, bucket_name, prefix)
+        print(f"----- File Uploaded to Bucket: {bucket_name}, "
+              f"Path: {prefix} -----")
+    except Exception as e:
+        print(f"----- Error on Uploading File to Bucket: {bucket_name}, "
+              f"Error: {e} -----")
+
+
 def get_files_under_given_bucket_prefix(bucket, prefix):
     """
     Get all the files under given bucket and path
