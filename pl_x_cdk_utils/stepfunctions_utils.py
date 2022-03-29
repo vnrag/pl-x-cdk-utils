@@ -139,7 +139,7 @@ def step_invoke_lambda_function(
 
 def get_trigger_step_function_state(
         construct, state_name, state_machine, input_path='$',
-        result_path='$.sfn_invoke', output_path="$.output",
+        result_path='$.sfn_invoke', output_path="$",
         integration_pattern=sfn.IntegrationPattern.RUN_JOB):
     """
     Trigger state machine
