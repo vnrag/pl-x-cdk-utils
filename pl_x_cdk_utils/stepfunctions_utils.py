@@ -217,7 +217,7 @@ def get_aws_service_call_state(construct, state_name, action,
 
 
 def get_map_state(construct, state_name, items_path="$.args",
-                  input_path="$.args.arg", result_path="$.map_resp",
+                  input_path="$", result_path="$.map_resp",
                   max_concurrency=6):
     """
     Get map state
