@@ -179,7 +179,7 @@ def get_aws_service_call_state(construct, state_name, action,
                                iam_action="appflow:StartFlow",
                                iam_resources=["*"],
                                parameters={"FlowName.$": "$"},
-                               result_path="$.aws_call"):
+                               result_path="$"):
     """
     Get AWS service call state
     Parameters
