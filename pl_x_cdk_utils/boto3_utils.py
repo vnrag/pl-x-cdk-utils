@@ -3,14 +3,27 @@ import uuid
 import boto3
 
 
-def get_ssm_value(ssm_param):
+def get_ssm_value(ssm_param, region='eu-central-1', aws_credentials=None):
     """
     :param ssm_param: string
                       Name for the parameter we want to retrieve
+    :param region: string
+                   AWS region
+    :param aws_credentials: object
+                            AWS credentials
     :return: string
              Value for the SSM
     """
-    ssm_client = boto3.client('ssm', region_name='eu-central-1')
+    if aws_credentials:
+        access_key = aws_credentials['Credentials']['AccessKeyId']
+        secret_key = aws_credentials['Credentials']['SecretAccessKey']
+        session_token = aws_credentials['Credentials']['SessionToken']
+        ssm_client = boto3.client('ssm', aws_access_key_id=access_key,
+                                  aws_secret_access_key=secret_key,
+                                  aws_session_token=session_token,
+                                  region_name=region_name)
+    else:
+        ssm_client = boto3.client('ssm', region_name=region)
     target_val = ssm_client.get_parameter(
         Name=ssm_param,
         WithDecryption=False
