@@ -21,7 +21,7 @@ def get_ssm_value(ssm_param, region='eu-central-1', aws_credentials=None):
         ssm_client = boto3.client('ssm', aws_access_key_id=access_key,
                                   aws_secret_access_key=secret_key,
                                   aws_session_token=session_token,
-                                  region_name=region_name)
+                                  region_name=region)
     else:
         ssm_client = boto3.client('ssm', region_name=region)
     target_val = ssm_client.get_parameter(
@@ -201,7 +201,7 @@ def change_s3_policy(
         s3 = boto3.client('s3', aws_access_key_id=access_key,
                           aws_secret_access_key=secret_key,
                           aws_session_token=session_token,
-                          region_name=region_name)
+                          region_name=region)
     else:
         s3 = boto3.client('s3', region_name=region)
 
@@ -249,9 +249,3 @@ def change_s3_policy(
         }
     else:
         return response
-
-
-
-
-
-
