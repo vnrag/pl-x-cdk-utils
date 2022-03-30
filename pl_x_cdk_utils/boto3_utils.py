@@ -156,7 +156,7 @@ def initiate_quicksight_ingestion(dataset_id,quicksight_account_id,
 
 def change_s3_policy(
         sid, bucket_name, principal_arn, actions,
-        resources=['*'], region='eu-central-1'):
+        resources=['*'], region='eu-central-1', aws_credentials=None):
     """
     Add new bucket policy to existing bucket
 
@@ -174,13 +174,23 @@ def change_s3_policy(
             list of resources to give permissions on
     region: string
             Region for the deployment
-
+    aws_credentials: object
+                     AWS credentials object
     Returns
     -------
     dict
             put_bucket_policy response
     """
-    s3 = boto3.client('s3', region_name=region)
+    if aws_credentials:
+        access_key = aws_credentials['Credentials']['AccessKeyId']
+        secret_key = aws_credentials['Credentials']['SecretAccessKey']
+        session_token = aws_credentials['Credentials']['SessionToken']
+        s3 = boto3.client('s3', aws_access_key_id=access_key,
+                          aws_secret_access_key=secret_key,
+                          aws_session_token=session_token,
+                          region_name=region_name)
+    else:
+        s3 = boto3.client('s3', region_name=region)
 
     current_policy = json.loads(s3.get_bucket_policy(
         Bucket=bucket_name)['Policy'])
