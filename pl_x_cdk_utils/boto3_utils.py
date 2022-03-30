@@ -249,7 +249,7 @@ def change_s3_policy(
             }
 
     working_statements = current_policy["Statement"] if \
-        'Statement' in current_policy else dict()
+        'Statement' in current_policy else []
     # add only the new statement if it doesn't exist before
     if sid not in current_sids:
         working_statements.append(new_policy_statement)
