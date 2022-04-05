@@ -13,7 +13,8 @@ REQUIRED = [
     'boto3',
     'aws-cdk-lib==2.14.0',
     'constructs>=10.0.0,<11.0.0',
-    'aws_cdk.aws_glue_alpha'
+    'aws_cdk.aws_glue_alpha',
+    'aws_cdk.triggers'
 ]
 
 
