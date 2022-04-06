@@ -12,7 +12,8 @@ def add_manual_approve_step(name):
     return pipelines.ManualApprovalStep(f"Approve {name}")
 
 
-def get_codepipeline(construct, repo_name, synth_step, id=None):
+def get_codepipeline(construct, repo_name, synth_step, id=None,
+                     self_mutation=True, cross_account_keys=True):
     """
     Codepipeline constrict for given repo and synth step
     :param construct: object
@@ -23,6 +24,10 @@ def get_codepipeline(construct, repo_name, synth_step, id=None):
                        Codebuild or ShellStep or any other..
     :param id: string
                 logical id of the cdk construct
+    :param self_mutation: bool
+                          Flag for self-mutation
+    :param cross_account_keys: bool
+                               Flag for cross account keys
     :return: object
              Pipeline object
     """
@@ -31,8 +36,8 @@ def get_codepipeline(construct, repo_name, synth_step, id=None):
         construct,
         param_id,
         pipeline_name=repo_name,
-        cross_account_keys=True,
-        self_mutation=True,
+        cross_account_keys=cross_account_keys,
+        self_mutation=self_mutation,
         synth=synth_step,
     )
     return pipeline
