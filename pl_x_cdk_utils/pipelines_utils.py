@@ -89,11 +89,12 @@ def get_codebuild_step(
 def add_pipeline_stage(
     pipeline,
     stage,
-    scope,
-    account_details,
+    scope=None,
+    account_details=None,
     pre_step_sequence=[],
     pre_stage=None,
     post_stage=None,
+    prep_stage=True
 ):
     """
     Add stage on the pipeline object
@@ -111,19 +112,19 @@ def add_pipeline_stage(
                       Steps before the stage execution
     :param post_stage: object
                        Steps after the stage execution
+    :param prep_stage: bool
+                       Flag for stage object preparation
     :return: object
              Pipeline object with stage
     """
+    if prep_stage:
+        stage = stage(scope, account_details['name'],
+                      env=Environment(account=account_details["id"],
+                                      region=account_details["region"]))
     stage = pipeline.add_stage(
-        stage(
-            scope,
-            account_details["name"],
-            env=Environment(
-                account=account_details["id"], region=account_details["region"]
-            ),
-        ),
-        pre=pipelines.Step.sequence(pre_step_sequence),
-    )
+            stage,
+            pre=pipelines.Step.sequence(pre_step_sequence)
+            )
     if pre_stage:
         stage.add_pre(pre_stage)
     if post_stage:
