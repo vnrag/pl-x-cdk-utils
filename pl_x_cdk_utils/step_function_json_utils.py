@@ -97,6 +97,8 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         else default_cluster_configs["scaling_policy"]
     step_concurrency = config["step_concurrency"] if "step_concurrency" \
                                                      in config else 10
+    emr_version = config['emr_version'] if 'emr_version' in config else \
+        "emr-6.2.0"
     ec2_subnet = config['ec2_subnet']
     emr_slave_security = config['emr_slave_security']
     emr_master_security = config['emr_master_security']
@@ -107,7 +109,7 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         "Type": "Task",
         "Resource": "arn:aws:states:::elasticmapreduce:createCluster.sync",
         "Parameters": {
-                "ReleaseLabel": "emr-6.2.0",
+                "ReleaseLabel": emr_version,
                 "StepConcurrencyLevel": step_concurrency,
                 "Tags": tags,
                 "Applications": apps,
