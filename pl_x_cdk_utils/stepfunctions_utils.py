@@ -37,7 +37,7 @@ def deploy_state_machine(construct, name, definition, id=None, role=None,
              State machine object
     """
     log_group = log_group if log_group else \
-        create_log_group(construct, name=f"{name}Log")
+        create_log_group(construct, name=f"{name}")
     param_id = id if id else f"profile-for-state-machine-{name}"
     if role:
         state_machine = sfn.StateMachine(
