@@ -277,7 +277,7 @@ def get_choice_state(construct, state_name):
 
 def get_pass_state(construct, state_name, result_path="$.pass_state",
                    comment="Pass state for step-function",
-                   result={}, path=False):
+                   result={}, path=False, output_path="$", parameters={}):
     """
     Get the Pass state for Step-Function
     Parameters
@@ -294,6 +294,10 @@ def get_pass_state(construct, state_name, result_path="$.pass_state",
              Result for the pass state
     path : bool
            Flag to check if the given result is object or string
+    output_path : string
+           Output path for the result
+    parameters : dict
+           Parameters to be collected
     Returns
     -------
     State object
@@ -302,7 +306,8 @@ def get_pass_state(construct, state_name, result_path="$.pass_state",
         else sfn.Result.from_object(result)
     state = sfn.Pass(
             construct, state_name, comment=comment,
-            result_path=result_path, result=result)
+            result_path=result_path, result=result, output_path=output_path,
+            parameters=parameters)
     return state
 
 

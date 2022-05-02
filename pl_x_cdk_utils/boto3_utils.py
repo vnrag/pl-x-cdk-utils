@@ -85,6 +85,17 @@ def invoke_lambda(lambda_func, payload={}):
     return out
 
 
+# Function to read file from s3
+def get_object_from_s3(bucket_name, object_key, region='eu-central-1'):
+    s3_client = boto3.client("s3", region_name=region)
+    response = s3_client.get_object(
+            Bucket=bucket_name,
+            Key=object_key
+            )
+    response_json = response['Body'].read().decode('utf-8')
+    return response_json
+
+
 # Function to Upload file to s3
 def upload_file_to_s3(file_path, bucket_name, prefix, region='eu-central-1'):
     s3_client = boto3.client("s3", region_name=region)
