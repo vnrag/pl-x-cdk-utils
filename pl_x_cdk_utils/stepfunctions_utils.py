@@ -218,7 +218,7 @@ def get_aws_service_call_state(construct, state_name, action,
 
 def get_map_state(construct, state_name, items_path="$.args",
                   input_path="$", result_path="$.map_resp",
-                  max_concurrency=6):
+                  max_concurrency=6, parameters={}):
     """
     Get map state
     Parameters
@@ -227,20 +227,23 @@ def get_map_state(construct, state_name, items_path="$.args",
                 Stack Scope
     state_name : string
                  Name for the state
-    items_path :
+    items_path : string
+                Items path from the array for the step-function to be triggered
     input_path : string
                  Input path for the step-function to be triggered
     result_path : string
                  Result path for the result after the trigger
     max_concurrency : int
                       Max concurrent calls over the iterations
+    parameters : dict
+                Parameters for the map state
     Returns
     -------
     State object
     """
     state = sfn.Map(construct, state_name, items_path=items_path,
                     input_path=input_path, result_path=result_path,
-                    max_concurrency=max_concurrency
+                    max_concurrency=max_concurrency, parameters=parameters
                     )
     return state
 
