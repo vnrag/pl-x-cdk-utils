@@ -290,7 +290,8 @@ def get_json_for_lambda(arn, next_state=None, catch=None,
 
 def get_json_for_step_function(arn, input_path=None, input=None,
                                next_state=None, catch=None, result_path=None,
-                               output_path="$", result_selector=False):
+                               output_path="$", result_selector=False,
+                               name_path=None, name=None):
     sfn_json = {
         "Type": "Task",
         "Resource": "arn:aws:states:::states:startExecution.sync",
@@ -311,6 +312,10 @@ def get_json_for_step_function(arn, input_path=None, input=None,
         sfn_json["Catch"] = catch
     if result_selector:
         sfn_json["ResultSelector"] = result_selector
+    if name:
+        sfn_json["Parameters"]["Name"] = name
+    if name_path:
+        sfn_json["Parameters"]["Name.$"] = name_path
 
     sfn_json["ResultPath"] = result_path if result_path else None
     sfn_json["OutputPath"] = output_path
