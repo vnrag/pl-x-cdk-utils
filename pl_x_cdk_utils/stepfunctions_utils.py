@@ -15,8 +15,15 @@ from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
 
 
-def deploy_state_machine(construct, name, definition, id=None, role=None,
-                         log_group=None, log_level=sfn.LogLevel.ALL):
+def deploy_state_machine(
+    construct,
+    name,
+    definition,
+    id=None,
+    role=None,
+    log_group=None,
+    log_level=sfn.LogLevel.ALL,
+):
     """
      Deploy state machine
      :param construct: object
@@ -36,8 +43,7 @@ def deploy_state_machine(construct, name, definition, id=None, role=None,
     :return: object
              State machine object
     """
-    log_group = log_group if log_group else \
-        create_log_group(construct, name=f"{name}")
+    log_group = log_group if log_group else create_log_group(construct, name=f"{name}")
     param_id = id if id else f"profile-for-state-machine-{name}"
     if role:
         state_machine = sfn.StateMachine(
@@ -46,16 +52,16 @@ def deploy_state_machine(construct, name, definition, id=None, role=None,
             state_machine_name=name,
             definition=definition,
             role=role,
-            logs=sfn.LogOptions(destination=log_group, level=log_level)
-            )
+            logs=sfn.LogOptions(destination=log_group, level=log_level),
+        )
     else:
         state_machine = sfn.StateMachine(
-                construct,
-                param_id,
-                state_machine_name=name,
-                definition=definition,
-                logs=sfn.LogOptions(destination=log_group, level=log_level)
-                )
+            construct,
+            param_id,
+            state_machine_name=name,
+            definition=definition,
+            logs=sfn.LogOptions(destination=log_group, level=log_level),
+        )
     return state_machine
 
 
@@ -138,9 +144,14 @@ def step_invoke_lambda_function(
 
 
 def get_trigger_step_function_state(
-        construct, state_name, state_machine, input_path='$',
-        result_path='$.sfn_invoke', output_path="$",
-        integration_pattern=sfn.IntegrationPattern.RUN_JOB):
+    construct,
+    state_name,
+    state_machine,
+    input_path="$",
+    result_path="$.sfn_invoke",
+    output_path="$",
+    integration_pattern=sfn.IntegrationPattern.RUN_JOB,
+):
     """
     Trigger state machine
     Parameters
@@ -164,22 +175,27 @@ def get_trigger_step_function_state(
     State object
     """
     state = sfn_tasks.StepFunctionsStartExecution(
-        construct, state_name,
+        construct,
+        state_name,
         state_machine=state_machine,
         integration_pattern=integration_pattern,
         input_path=input_path,
         result_path=result_path,
-        output_path=output_path
-        )
+        output_path=output_path,
+    )
     return state
 
 
-def get_aws_service_call_state(construct, state_name, action,
-                               service="appflow",
-                               iam_action="appflow:StartFlow",
-                               iam_resources=["*"],
-                               parameters={"FlowName.$": "$"},
-                               result_path="$"):
+def get_aws_service_call_state(
+    construct,
+    state_name,
+    action,
+    service="appflow",
+    iam_action="appflow:StartFlow",
+    iam_resources=["*"],
+    parameters={"FlowName.$": "$"},
+    result_path="$",
+):
     """
     Get AWS service call state
     Parameters
@@ -205,20 +221,28 @@ def get_aws_service_call_state(construct, state_name, action,
     State object
     """
     state = sfn_tasks.CallAwsService(
-                construct, state_name,
-                action=action,
-                service=service,
-                iam_action=iam_action,
-                iam_resources=iam_resources,
-                parameters=parameters,
-                result_path=result_path
-            )
+        construct,
+        state_name,
+        action=action,
+        service=service,
+        iam_action=iam_action,
+        iam_resources=iam_resources,
+        parameters=parameters,
+        result_path=result_path,
+    )
     return state
 
 
-def get_map_state(construct, state_name, items_path="$.args",
-                  input_path="$", result_path="$.map_resp",
-                  max_concurrency=6, parameters={}, result_selector={}):
+def get_map_state(
+    construct,
+    state_name,
+    items_path="$.args",
+    input_path="$",
+    result_path="$.map_resp",
+    max_concurrency=6,
+    parameters={},
+    result_selector={},
+):
     """
     Get map state
     Parameters
@@ -243,11 +267,16 @@ def get_map_state(construct, state_name, items_path="$.args",
     -------
     State object
     """
-    state = sfn.Map(construct, state_name, items_path=items_path,
-                    input_path=input_path, result_path=result_path,
-                    max_concurrency=max_concurrency, parameters=parameters,
-                    result_selector=result_selector
-                    )
+    state = sfn.Map(
+        construct,
+        state_name,
+        items_path=items_path,
+        input_path=input_path,
+        result_path=result_path,
+        max_concurrency=max_concurrency,
+        parameters=parameters,
+        result_selector=result_selector,
+    )
     return state
 
 
@@ -281,9 +310,16 @@ def get_choice_state(construct, state_name):
     return state
 
 
-def get_pass_state(construct, state_name, result_path="$.pass_state",
-                   comment="Pass state for step-function",
-                   result={}, path=False, output_path="$", parameters={}):
+def get_pass_state(
+    construct,
+    state_name,
+    result_path="$.pass_state",
+    comment="Pass state for step-function",
+    result={},
+    path=False,
+    output_path="$",
+    parameters={},
+):
     """
     Get the Pass state for Step-Function
     Parameters
@@ -308,12 +344,18 @@ def get_pass_state(construct, state_name, result_path="$.pass_state",
     -------
     State object
     """
-    result = sfn.Result.from_json_path_at(result) if path \
-        else sfn.Result.from_object(result)
+    result = (
+        sfn.Result.from_json_path_at(result) if path else sfn.Result.from_object(result)
+    )
     state = sfn.Pass(
-            construct, state_name, comment=comment,
-            result_path=result_path, result=result, output_path=output_path,
-            parameters=parameters)
+        construct,
+        state_name,
+        comment=comment,
+        result_path=result_path,
+        result=result,
+        output_path=output_path,
+        parameters=parameters,
+    )
     return state
 
 
@@ -343,7 +385,7 @@ def get_condition_state(
     if type == "bool":
         state = conditional_state.when(
             sfn.Condition.boolean_equals(comparison_path, comparison_val),
-            transition_state
+            transition_state,
         )
 
     return state
@@ -367,8 +409,12 @@ def get_wait_state(construct, state_name, duration, comment=None):
     State object
     """
     comment = comment if comment else f"Waiting For {duration}"
-    state = sfn.Wait(construct, state_name, time=sfn.WaitTime.duration(
-            Duration.seconds(duration)), comment=comment)
+    state = sfn.Wait(
+        construct,
+        state_name,
+        time=sfn.WaitTime.duration(Duration.seconds(duration)),
+        comment=comment,
+    )
     return state
 
 
@@ -387,8 +433,8 @@ def get_succeed_state(construct, state_name="Succeeded"):
 
 
 def get_failed_state(
-    construct, state_name="Failed", cause="One of the State Failed",
-        error="Failed"):
+    construct, state_name="Failed", cause="One of the State Failed", error="Failed"
+):
     """
      Get Failed state
     :param construct: object
@@ -406,8 +452,15 @@ def get_failed_state(
     return failed_state
 
 
-def get_sns_publish_state(construct, state_name, topic, message, path=True,
-                          result_path="$.sns", subject="SNS Message"):
+def get_sns_publish_state(
+    construct,
+    state_name,
+    topic,
+    message,
+    path=True,
+    result_path="$.sns",
+    subject="SNS Message",
+):
     """
     Get SNS publish state for step function
     Parameters
@@ -431,12 +484,19 @@ def get_sns_publish_state(construct, state_name, topic, message, path=True,
     -------
     State object
     """
-    message = sfn.TaskInput.from_json_path_at(message) if path else \
-        sfn.TaskInput.from_object(message)
+    message = (
+        sfn.TaskInput.from_json_path_at(message)
+        if path
+        else sfn.TaskInput.from_object(message)
+    )
     state = sfn_tasks.SnsPublish(
-            construct, state_name, topic=topic,
-            message=message, result_path=result_path,
-            subject=subject)
+        construct,
+        state_name,
+        topic=topic,
+        message=message,
+        result_path=result_path,
+        subject=subject,
+    )
     return state
 
 
@@ -465,39 +525,41 @@ def create_sfn_tasks_instance_fleet(
     Returns:
         ecc.InstanceFleetConfigProperty: instance fleet config
     """
+    fleet = None
 
     if instance_role_type == "TASK":
         fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(
-                    f"ecc.InstanceRoleType.{instance_role_type}"),
+            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
             # the properties below are optional
             instance_type_configs=[
                 ecc.InstanceTypeConfigProperty(
-                    instance_type=instance_type,
+                    instance_type=instance,
                     bid_price=bid_price,
                     weighted_capacity=weighted_capacity,
                 )
+                for instance in instance_type
             ],
-            launch_specifications=
-            ecc.InstanceFleetProvisioningSpecificationsProperty(
+            launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
                 spot_specification=ecc.SpotProvisioningSpecificationProperty(
                     timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
-                    timeout_duration_minutes=600)),
+                    timeout_duration_minutes=600,
+                ),
+            ),
             name=instance_role_type,
             target_on_demand_capacity=target_on_demand_capacity,
-            target_spot_capacity=target_spot_capacity
+            target_spot_capacity=target_spot_capacity,
         )
     else:
         fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(
-                    f"ecc.InstanceRoleType.{instance_role_type}"),
+            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
             # the properties below are optional
             instance_type_configs=[
                 ecc.InstanceTypeConfigProperty(
-                    instance_type=instance_type,
+                    instance_type=instance,
                     bid_price=bid_price,
                     weighted_capacity=weighted_capacity,
                 )
+                for instance in instance_type
             ],
             name=instance_role_type,
             target_on_demand_capacity=target_on_demand_capacity,
@@ -508,11 +570,7 @@ def create_sfn_tasks_instance_fleet(
 
 
 def create_sfn_tasks_instances(
-    ec2_subnet_id: str,
-    emr_managed_master_security_group: str,
-    emr_managed_slave_security_group: str,
-    bid_price: str,
-    config={},
+    cluster_config,
 ) -> ecc.InstancesConfigProperty:
     """Create instances for the EMR cluster.
 
@@ -521,53 +579,49 @@ def create_sfn_tasks_instances(
         emr_managed_master_security_group (str): master security group
         emr_managed_slave_security_group (str): slave security group
         bid_price (str): bid price for spot instance (TASK)
-        config (dict): configurations needed for instances
+        weighted_capacity (int): weighted capacity for each instance
 
     Returns:
         ecc.InstancesConfigProperty: instances config
     """
-    master_instance_type = (
-        config["master_instance_type"]
-        if "master_instance_type" in config
-        else "m5.xlarge"
-    )
-    core_instance_type = (
-        config["core_instance_type"] if "core_instance_type" in config
-        else "m5.xlarge"
-    )
-    core_on_demand = config["core_on_demand"] if "core_on_demand" in config \
-        else 1
-    core_weighted = config["core_weighted"] if "core_weighted" in config \
-        else 1
-    core_spot = config["core_spot"] if "core_spot" in config else 0
-
     instances = ecc.InstancesConfigProperty(
-        ec2_subnet_id=ec2_subnet_id,
-        emr_managed_master_security_group=emr_managed_master_security_group,
-        emr_managed_slave_security_group=emr_managed_slave_security_group,
+        ec2_subnet_id=cluster_config["ec2_subnet_id"],
+        emr_managed_master_security_group=cluster_config[
+            "emr_managed_master_security_group"
+        ],
+        emr_managed_slave_security_group=cluster_config[
+            "emr_managed_slave_security_group"
+        ],
         # keep_job_flow_alive_when_no_steps=True,
         termination_protected=False,
         instance_fleets=[
             create_sfn_tasks_instance_fleet(
-                "MASTER",
-                master_instance_type,
-                target_on_demand_capacity=1,
-                weighted_capacity=1,
+                cluster_config["master"]["name"],
+                cluster_config["master"]["instance_type"],
+                target_on_demand_capacity=cluster_config["master"][
+                    "target_on_demand_capacity"
+                ],
+                target_spot_capacity=cluster_config["master"]["target_spot_capacity"],
+                weighted_capacity=cluster_config["master"]["weighted_capacity"],
             ),
             create_sfn_tasks_instance_fleet(
-                "CORE",
-                core_instance_type,
-                target_on_demand_capacity=core_on_demand,
-                target_spot_capacity=core_spot,
-                weighted_capacity=core_weighted,
+                cluster_config["core"]["name"],
+                cluster_config["core"]["instance_type"],
+                target_on_demand_capacity=cluster_config["core"][
+                    "target_on_demand_capacity"
+                ],
+                target_spot_capacity=cluster_config["core"]["target_spot_capacity"],
+                weighted_capacity=cluster_config["core"]["weighted_capacity"],
             ),
             create_sfn_tasks_instance_fleet(
-                "TASK",
-                "m5.xlarge",
-                target_on_demand_capacity=0,
-                target_spot_capacity=3,
-                bid_price=bid_price,
-                weighted_capacity=1,
+                cluster_config["task"]["name"],
+                cluster_config["task"]["instance_type"],
+                target_on_demand_capacity=cluster_config["task"][
+                    "target_on_demand_capacity"
+                ],
+                target_spot_capacity=cluster_config["task"]["target_spot_capacity"],
+                bid_price=cluster_config["task"]["bid_price"],
+                weighted_capacity=cluster_config["task"]["weighted_capacity"],
             ),
         ],
     )
@@ -579,18 +633,7 @@ def create_sfn_tasks_emr_cluster(
     scope: Stack,
     step_name: str,
     cluster_name: str,
-    cluster_role: iam.IRole,
-    service_role: iam.IRole,
-    emr_config_bucket: str,
-    bootstrap_uri: str,
-    log_uri: str,
-    ec2_subnet_id: str,
-    emr_managed_master_security_group: str,
-    emr_managed_slave_security_group: str,
-    bid_price: str,
-    weighted_capacity: int,
-    applications: list = ["spark"],
-    release_label: str = "emr-6.2.0",
+    cluster_config,
 ) -> ecc:
     """Create EMR cluster.
 
@@ -598,20 +641,7 @@ def create_sfn_tasks_emr_cluster(
         scope (Stack): scope of the Stack
         step_name (str): step name in the step function
         cluster_name (str): cluster name
-        cluster_role (iam.IRole): role for the instance cluster to be created
-        service_role (iam.IRole): role for the instance service
-        emr_config_bucket (str): bucket name to load the emr configs
-        bootstrap_uri (str): script path for bootstraping the cluster
-        log_uri (str): path to store the emr logs
-        ec2_subnet_id (str): subnet id for the instance
-        emr_managed_master_security_group (str): master security group
-        emr_managed_slave_security_group (str): slave security group
-        bid_price (str): bid price for spot instance (TASK)
-        weighted_capacity (int): weighted capacity for each instance
-        applications (list, optional): list of applications to be included
-         in the cluster. Defaults to ["spark"].
-        release_label (str, optional): release version of the emr cluster.
-        Defaults to "emr-6.2.0".
+        cluster_config (dict): configurations necessary for the cluster
 
     Returns:
         ecc: EMR cluster
@@ -620,31 +650,32 @@ def create_sfn_tasks_emr_cluster(
         scope,
         step_name,
         instances=create_sfn_tasks_instances(
-            ec2_subnet_id,
-            emr_managed_master_security_group,
-            emr_managed_slave_security_group,
-            bid_price,
-            weighted_capacity,
+            cluster_config,
         ),
-        cluster_role=cluster_role,
+        cluster_role=cluster_config["job_flow_role"],
         name=cluster_name,
-        service_role=service_role,
+        service_role=cluster_config["service_role"],
         applications=[
             ecc.ApplicationConfigProperty(name=application)
-            for application in applications
+            for application in cluster_config["applications"]
         ],
         bootstrap_actions=[
             ecc.BootstrapActionConfigProperty(
                 name="Install external libraries",
                 script_bootstrap_action=ecc.ScriptBootstrapActionConfigProperty(
-                    path=prepare_s3_path(emr_config_bucket, bootstrap_uri),
+                    path=prepare_s3_path(
+                        cluster_config["bootstrap"]["bucket"],
+                        cluster_config["bootstrap"]["bootstrap_uri"],
+                    ),
                 ),
             )
         ],
-        log_uri=prepare_s3_path(emr_config_bucket, log_uri),
-        release_label=release_label,
-        scale_down_behavior=
-        ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
+        log_uri=prepare_s3_path(
+            cluster_config["log"]["bucket"],
+            cluster_config["log"]["uri"],
+        ),
+        release_label=cluster_config["release_label"],
+        scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         # tags=[CfnTag(key="key", value="value")],
         visible_to_all_users=True,
         result_path="$.cluster",
@@ -669,7 +700,7 @@ def add_sfn_tasks_emr_step(
         Defaults to [].
 
     Returns:
-        eas: execution step in EMR
+        eas: execution step in EMR (emr task)
     """
     emr_step = eas(
         scope,
