@@ -63,7 +63,12 @@ def get_added_policies_as_role(
     return role
 
 
-def get_role_from_arn(construct, role_name, id=None):
+def get_role_from_arn(
+    construct,
+    role_name,
+    id=None,
+    instance_profile=False,
+):
     """
     Get role object from the arn with given role name
     :param construct: object
@@ -76,8 +81,14 @@ def get_role_from_arn(construct, role_name, id=None):
              IAM role object
     """
     param_id = id if id else f"profile-for-role-{role_name}"
-    role_arn = f"arn:aws:iam::{construct.account}:role/{role_name}"
+
+    if instance_profile:
+        role_arn = f"arn:aws:iam::{construct.account}:instance-profile/{role_name}"
+    else:
+        role_arn = f"arn:aws:iam::{construct.account}:role/{role_name}"
+
     role = iam.Role.from_role_arn(construct, param_id, role_arn=role_arn)
+
     return role
 
 
