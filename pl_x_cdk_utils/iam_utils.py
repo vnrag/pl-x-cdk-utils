@@ -16,7 +16,13 @@ def get_policy_statement(actions, resources=["*"]):
 
 
 def get_added_policies_as_role(
-    construct, role_name, principal, actions_list, resources_list=["*"], id=None
+    construct,
+    role_name,
+    principal,
+    actions_list,
+    resources_list=["*"],
+    id=None,
+    composite_principal=False,
 ):
     """
     :param construct: object
@@ -31,19 +37,29 @@ def get_added_policies_as_role(
                            List for the resources we want to give the permission
     :param id: string
                 logical id of the cdk construct
+    :param composite_principal: boolean
+                Allow to pass principal as composite of several services or not
     :return: object
              IAM role object
     """
     param_id = id if id else f"profile-for-role-{role_name}"
-    role = iam.Role(
-        construct,
-        param_id,
-        role_name=role_name,
-        assumed_by=iam.ServicePrincipal(principal),
-    )
+    if composite_principal:
+        role = iam.Role(
+            construct,
+            param_id,
+            role_name=role_name,
+            assumed_by=principal,
+        )
+    else:
+        role = iam.Role(
+            construct,
+            param_id,
+            role_name=role_name,
+            assumed_by=iam.ServicePrincipal(principal),
+        )
     role.add_to_policy(
         iam.PolicyStatement(resources=resources_list, actions=actions_list)
-                )
+    )
     return role
 
 
