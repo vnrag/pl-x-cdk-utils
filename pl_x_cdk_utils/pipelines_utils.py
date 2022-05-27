@@ -64,11 +64,12 @@ def get_github_connection(repo, branch, codestar_arn, owner="vnrag"):
 
 
 def get_codebuild_step(
-    git_source, commands, build_step="Synth", submodules={}, role_policy_statements=[]
+    input_object, commands, build_step="Synth", submodules={},
+        role_policy_statements=[]
 ):
     """
     Codebuild step needed for codepipeline
-    :param git_source: object
+    :param input_object: object
                       Github connection
     :param commands: list
                      List of execution commands
@@ -83,7 +84,7 @@ def get_codebuild_step(
     """
     codebuild_step = pipelines.CodeBuildStep(
         build_step,
-        input=git_source,
+        input=input_object,
         additional_inputs=submodules,
         commands=commands,
         role_policy_statements=role_policy_statements,
