@@ -95,6 +95,8 @@ def configure_extended_s3_destination_property(
     db_name,
     table_name,
     buffering_hints=None,
+    error_prefix=None,
+    is_dynamic_prefix=False,
 ):
     """
     Property for delivery stream for s3
@@ -113,7 +115,11 @@ def configure_extended_s3_destination_property(
     :param table_name: string
                        Glue table name
     :param buffering_hints: object
-                            Buffering hint object
+                        Buffering hint object
+    :param error_prefix: string
+                        S3 path for error output
+    :param is_dynamic_prefix: boolean
+                        Dynamic prefix added to output prefix
     :return: object
              Configuration for s3 destination delivery stream
     """
@@ -122,8 +128,10 @@ def configure_extended_s3_destination_property(
         enabled=True, log_group_name=log_group_name, log_stream_name=log_stream_name
     )
 
-    prefix = output_prefix + dynamic_output_path
-    error_output_prefix = output_prefix + dynamic_error_path
+    prefix = output_prefix + dynamic_output_path if is_dynamic_prefix else output_prefix
+    error_output_prefix = (
+        output_prefix + dynamic_error_path if is_dynamic_prefix else error_prefix
+    )
     data_format_conversion_config = get_data_conversion_config_property(
         db_name, table_name, role_arn
     )
