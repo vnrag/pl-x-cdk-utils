@@ -122,11 +122,25 @@ def create_glue_table(
     return glue_table
 
 
-def prepare_glue_table_columns(col_details):
+def prepare_glue_table_columns(
+    col_details,
+    struct_cols={},
+    key_type=glue.Schema.STRING,
+    input_string="",
+    is_primitive=False,
+):
     """
     Prepare columns list for the Glue table with column details dict
     :param col_details: dict
                         Columns details as dict with name and type
+    :param struct_cols: dict
+                        More Columns to be added for struct data type (name and type)
+    :param key_type: glue Schema Object
+                        Optional field for map column schema type
+    :param input_string: string
+                        Glue InputString for map/array type
+    :param is_primitive: boolean
+                        Flag to determine type of the map/array value primitive or not
     :return: list
             List of columns with name and type
     """
@@ -138,7 +152,18 @@ def prepare_glue_table_columns(col_details):
             temp["type"] = glue.Schema.STRING
         elif col_type.lower() in "integer":
             temp["type"] = glue.Schema.INTEGER
-
+        elif col_type.lower() in "struct":
+            temp["type"] = glue.Schema.struct(
+                columns=prepare_glue_table_columns(col_details=struct_cols)
+            )
+        elif col_type.lower() in "map":
+            temp["type"] = glue.Schema.map(
+                key_type=key_type, input_string=input_string, is_primitive=is_primitive
+            )
+        elif col_type.lower() in "array":
+            temp["type"] = glue.Schema.array(
+                input_string=input_string, is_primitive=is_primitive
+            )
         columns.append(temp)
 
     return columns
