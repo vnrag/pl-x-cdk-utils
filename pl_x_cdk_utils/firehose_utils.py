@@ -148,7 +148,7 @@ def configure_extended_s3_destination_property(
         if processor_property
         else None
     )
-    dynamic_partitioning = (
+    dynamic_partitioning_property = (
         Firehose.DynamicPartitioningConfigurationProperty(enabled=True, retry_options=1)
         if dynamic_partition
         else None
@@ -162,6 +162,6 @@ def configure_extended_s3_destination_property(
         data_format_conversion_configuration=data_format_conversion_config,
         role_arn=role_arn,
         processing_configuration=processing_config,
-        dynamic_partitioning_configuration=dynamic_partitioning,
+        dynamic_partitioning_configuration=dynamic_partitioning_property,
     )
     return extended_s3_config
