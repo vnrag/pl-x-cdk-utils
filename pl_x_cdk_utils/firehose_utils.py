@@ -94,6 +94,7 @@ def configure_extended_s3_destination_property(
     role_arn,
     db_name,
     table_name,
+    processor_property=None,
     buffering_hints=None,
     error_prefix=None,
     is_dynamic_prefix=False,
@@ -114,6 +115,8 @@ def configure_extended_s3_destination_property(
                           Glue database name
     :param table_name: string
                        Glue table name
+    :param processor_property: object
+                        Object from processor_property
     :param buffering_hints: object
                         Buffering hint object
     :param error_prefix: string
@@ -135,6 +138,13 @@ def configure_extended_s3_destination_property(
     data_format_conversion_config = get_data_conversion_config_property(
         db_name, table_name, role_arn
     )
+    processing_config = (
+        Firehose.ProcessingConfigurationProperty(
+            enabled=True, processors=[processor_property]
+        )
+        if processor_property
+        else None
+    )
     extended_s3_config = Firehose.ExtendedS3DestinationConfigurationProperty(
         bucket_arn=bucket_arn,
         buffering_hints=buffering_hints,
@@ -143,5 +153,6 @@ def configure_extended_s3_destination_property(
         cloud_watch_logging_options=log_option,
         data_format_conversion_configuration=data_format_conversion_config,
         role_arn=role_arn,
+        processing_configuration=processing_config,
     )
     return extended_s3_config
