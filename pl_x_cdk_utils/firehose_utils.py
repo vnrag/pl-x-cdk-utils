@@ -149,7 +149,10 @@ def configure_extended_s3_destination_property(
         else None
     )
     dynamic_partitioning_property = (
-        Firehose.DynamicPartitioningConfigurationProperty(enabled=True, retry_options=1)
+        Firehose.DynamicPartitioningConfigurationProperty(
+            enabled=True,
+            retry_options=Firehose.RetryOptionsProperty(duration_in_seconds=60),
+        )
         if dynamic_partition
         else None
     )
