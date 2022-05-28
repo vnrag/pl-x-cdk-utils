@@ -94,6 +94,7 @@ def configure_extended_s3_destination_property(
     role_arn,
     db_name,
     table_name,
+    dynamic_partition=False,
     processor_property=None,
     buffering_hints=None,
     error_prefix=None,
@@ -104,19 +105,21 @@ def configure_extended_s3_destination_property(
     :param bucket_arn: string
                        Bucket arn for s3
     :param output_prefix: string
-                          S3 path for output
+                        S3 path for output
     :param log_group_name: string
-                           Log group name
+                        Log group name
     :param log_stream_name: string
-                            Log stream name
+                        Log stream name
     :param role_arn: string
-                     Role arn for the role
+                        Role arn for the role
     :param db_name: string
-                          Glue database name
+                        Glue database name
     :param table_name: string
                        Glue table name
     :param processor_property: object
                         Object from processor_property
+    :param dynamic_partition: boolean
+                        Flag to enable dynamic partition
     :param buffering_hints: object
                         Buffering hint object
     :param error_prefix: string
@@ -145,6 +148,11 @@ def configure_extended_s3_destination_property(
         if processor_property
         else None
     )
+    dynamic_partitioning = (
+        Firehose.DynamicPartitioningConfigurationProperty(enabled=True, retry_options=1)
+        if dynamic_partition
+        else None
+    )
     extended_s3_config = Firehose.ExtendedS3DestinationConfigurationProperty(
         bucket_arn=bucket_arn,
         buffering_hints=buffering_hints,
@@ -154,5 +162,6 @@ def configure_extended_s3_destination_property(
         data_format_conversion_configuration=data_format_conversion_config,
         role_arn=role_arn,
         processing_configuration=processing_config,
+        dynamic_partitioning_configuration=dynamic_partitioning,
     )
     return extended_s3_config
