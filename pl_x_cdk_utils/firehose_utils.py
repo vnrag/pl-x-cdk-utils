@@ -116,8 +116,8 @@ def configure_extended_s3_destination_property(
                         Glue database name
     :param table_name: string
                        Glue table name
-    :param processor_property: object
-                        Object from processor_property
+    :param processor_property: list
+                        List of Objects from processor_property
     :param dynamic_partition: boolean
                         Flag to enable dynamic partition
     :param buffering_hints: object
@@ -143,7 +143,7 @@ def configure_extended_s3_destination_property(
     )
     processing_config = (
         Firehose.ProcessingConfigurationProperty(
-            enabled=True, processors=[processor_property]
+            enabled=True, processors=processor_property
         )
         if processor_property
         else None
