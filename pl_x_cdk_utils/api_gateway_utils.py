@@ -48,6 +48,30 @@ def deploy_rest_api(
     return api
 
 
+def deploy_lambda_rest_api(
+        construct, api_name, lambda_handler, description=None, proxy=False):
+    """
+    Rest API with api_gateway
+    :param construct: object
+                      Stack Scope
+    :param api_name: string
+                     Name for API
+    :param lambda_handler: object
+                           Lambda handler for API
+    :param description: string
+                        Description on API
+    :param proxy: bool
+                  Boolean value for API proxy
+    :return: object
+             API object
+    """
+    description = description if description else f"API for {api_name}"
+    api = api_gateway.LambdaRestApi(construct, api_name,
+                                    handler=lambda_handler, proxy=proxy,
+                                    description=description)
+    return api
+
+
 def integrate_lambda_to_api(lambda_handler, req_templates=None):
     """
     Integrate lambda to rest API
