@@ -98,7 +98,7 @@ def configure_extended_s3_destination_property(
     processor_property=None,
     buffering_hints=None,
     error_prefix=None,
-    is_dynamic_prefix=False,
+    is_dynamic_prefix=True,
 ):
     """
     Property for delivery stream for s3
