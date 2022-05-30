@@ -92,13 +92,15 @@ def configure_extended_s3_destination_property(
     log_group_name,
     log_stream_name,
     role_arn,
-    db_name,
-    table_name,
-    dynamic_partition=False,
+    is_dynamic_prefix=True,
+    db_name=None,
+    table_name=None,
+    dynamic_partition_enabled=False,
+    processor_property_enabled=False,
     processor_property=None,
+    convert_format_enabled=True,
     buffering_hints=None,
     error_prefix=None,
-    is_dynamic_prefix=True,
 ):
     """
     Property for delivery stream for s3
@@ -112,20 +114,25 @@ def configure_extended_s3_destination_property(
                         Log stream name
     :param role_arn: string
                         Role arn for the role
+    :param is_dynamic_prefix: boolean
+                        Dynamic prefix added to output prefix
     :param db_name: string
                         Glue database name
     :param table_name: string
                        Glue table name
+    :param dynamic_partition_enabled: boolean
+                        Flag to enable dynamic partition
+    :param processor_property_enabled: boolean
+                        Flag to enable processor property
     :param processor_property: list
                         List of Objects from processor_property
-    :param dynamic_partition: boolean
-                        Flag to enable dynamic partition
+    :param convert_format_enabled: boolean
+                        Flag to enable convert record format
     :param buffering_hints: object
                         Buffering hint object
     :param error_prefix: string
                         S3 path for error output
-    :param is_dynamic_prefix: boolean
-                        Dynamic prefix added to output prefix
+
     :return: object
              Configuration for s3 destination delivery stream
     """
@@ -138,14 +145,16 @@ def configure_extended_s3_destination_property(
     error_output_prefix = (
         output_prefix + dynamic_error_path if is_dynamic_prefix else error_prefix
     )
-    data_format_conversion_config = get_data_conversion_config_property(
-        db_name, table_name, role_arn
+    data_format_conversion_config = (
+        get_data_conversion_config_property(db_name, table_name, role_arn)
+        if convert_format_enabled
+        else None
     )
     processing_config = (
         Firehose.ProcessingConfigurationProperty(
             enabled=True, processors=processor_property
         )
-        if processor_property
+        if processor_property_enabled
         else None
     )
     dynamic_partitioning_property = (
@@ -153,7 +162,7 @@ def configure_extended_s3_destination_property(
             enabled=True,
             retry_options=Firehose.RetryOptionsProperty(duration_in_seconds=60),
         )
-        if dynamic_partition
+        if dynamic_partition_enabled
         else None
     )
     extended_s3_config = Firehose.ExtendedS3DestinationConfigurationProperty(
