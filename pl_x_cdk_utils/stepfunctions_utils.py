@@ -280,6 +280,43 @@ def get_map_state(
     return state
 
 
+def get_parallel_state(construct, state_name="Parallel State",
+                       comment=None, input_path="$", output_path=None,
+                       result_path=None, result_selector=None):
+    """
+    Get Parallel state
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for the state
+    comment : string
+              Comment if needed
+    input_path : string
+                 Input path for the step-function to be triggered
+    result_path : string
+                 Result path for the result after the trigger
+    output_path : String
+                  Output path for the result
+    result_selector : dict
+                Selector for the map state's output
+    Returns
+    -------
+    State object
+    """
+    state = sfn.Parallel(
+        construct,
+        state_name,
+        comment=comment,
+        input_path=input_path,
+        result_path=result_path,
+        output_path=output_path,
+        result_selector=result_selector
+            )
+    return state
+
+
 def get_custom_state(construct, state_name, state_json):
     """
      Get the custom state with the provided json
