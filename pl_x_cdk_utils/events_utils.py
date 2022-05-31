@@ -8,6 +8,7 @@ def add_event_rule(
     id=None,
     minute="0",
     hour="6",
+    day="*",
     month="*",
     week_day="*",
     year="*",
@@ -30,6 +31,8 @@ def add_event_rule(
                    Minute for cron
     :param hour: string
                 Hour for cron
+    :param day: string
+                Day for cron
     :param month: string
                    Month for cron
     :param week_day: string
@@ -53,8 +56,8 @@ def add_event_rule(
         description=description,
         enabled=enabled,
         schedule=events.Schedule.cron(
-            minute=minute, hour=hour, month=month, week_day=week_day, year=year
-        )
+            minute=minute, hour=hour, day=day, month=month, week_day=week_day, year=year
+        ),
     )
     # Event input
     if cdk_function == "state_machine":
