@@ -90,19 +90,21 @@ def get_data_processor_property(processor_parameters):
     """
     Data conversion property for s3 destination property
     :param processor_parameters: dict
-                          Object of key ProcessorProperty type and value of ProcessorProperty parameters list
+                        Object of key ProcessorProperty type and value of ProcessorProperty parameters list
     :return: object
-             Data processor property for s3 destination property
+            Data processor property for s3 destination property
     """
     property_list = []
-    parameters_list = []
-    for type, parameters in processor_parameters:
-        for param_name, param_value in parameters:
-            parameters_list.append(
-                Firehose.ProcessorParameterProperty(
-                    parameter_name=param_name, parameter_value=param_value
+
+    for type, parameters in processor_parameters.items():
+        parameters_list = []
+        for param in parameters:
+            for key, value in param.items():
+                parameters_list.append(
+                    Firehose.ProcessorParameterProperty(
+                        parameter_name=key, parameter_value=value
+                    )
                 )
-            )
         property_list.append(
             Firehose.ProcessorProperty(type=type, parameters=parameters_list)
         )
