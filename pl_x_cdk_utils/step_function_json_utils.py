@@ -105,6 +105,26 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
     emr_service_access = config['emr_service_access'] if \
         'emr_service_access' in config else None
 
+    master_instance_config = config['master_instance_config'] if \
+        'master_instance_config' in config else [{"InstanceType": instance}]
+    core_instance_config = config['core_instance_config'] if \
+        'core_instance_config' in config else [{"InstanceType": instance}]
+    core_on_demand_key = "TargetOnDemandCapacity.$" if \
+        "core_on_demand" in config else "TargetOnDemandCapacity"
+    core_on_demand_val = config["core_on_demand"] if \
+        "TargetOnDemandCapacity.$" in config else core_on_demand
+    instance_type_config_key = "InstanceTypeConfigs.$" if \
+        "InstanceTypeConfigs.$" in config else "InstanceTypeConfigs"
+    instance_type_config_val = config["InstanceTypeConfigs.$"] if \
+        "InstanceTypeConfigs.$" in config else fleet_config
+    task_spot_key = "TargetSpotCapacity.$" if \
+        "task_spot_key" in config else "TargetSpotCapacity"
+    task_spot_val = config["task_spot_key"] if \
+        "task_spot_key" in config else spot_capacity
+    task_on_demand_key = "TargetOnDemandCapacity.$" if \
+        "task_on_demand_key" in config else "TargetOnDemandCapacity"
+    task_on_demand_val = config["task_on_demand_key"] if \
+        "task_on_demand_key" in config else task_on_demand
     cluster_json = {
         "Type": "Task",
         "Resource": "arn:aws:states:::elasticmapreduce:createCluster.sync",
@@ -119,34 +139,26 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
                             "InstanceFleetType": "MASTER",
                             "Name": "MASTER_NODE",
                             "TargetOnDemandCapacity": 1,
-                            "InstanceTypeConfigs": [
-                                {
-                                    "InstanceType": instance,
-                                }
-                            ]
+                            "InstanceTypeConfigs": master_instance_config
                         },
                         {
                             "InstanceFleetType": "CORE",
                             "Name": "CORE_NODE",
-                            "TargetOnDemandCapacity": core_on_demand,
-                            "InstanceTypeConfigs": [
-                                {
-                                    "InstanceType": instance
-                                }
-                            ]
+                            core_on_demand_key: core_on_demand_val,
+                            "InstanceTypeConfigs": core_instance_config
                         },
                         {
                             "InstanceFleetType": "TASK",
                             "Name": "TASK_NODES",
-                            "TargetSpotCapacity": spot_capacity,
-                            "TargetOnDemandCapacity": task_on_demand,
+                            task_spot_key: task_spot_val,
+                            task_on_demand_key: task_on_demand_val,
                             "LaunchSpecifications": {
                                 "SpotSpecification": {
                                     "TimeoutDurationMinutes": 180,
                                     "TimeoutAction": "TERMINATE_CLUSTER"
                                 }
                             },
-                            "InstanceTypeConfigs": fleet_config,
+                            instance_type_config_key: instance_type_config_val,
                         }
                     ],
                     "KeepJobFlowAliveWhenNoSteps": True,
