@@ -381,9 +381,10 @@ def get_pass_state(
     -------
     State object
     """
-    result = (
-        sfn.Result.from_json_path_at(result) if path else sfn.Result.from_object(result)
-    )
+    if result is not None:
+        result = (
+            sfn.Result.from_json_path_at(result) if path else
+            sfn.Result.from_object(result))
     state = sfn.Pass(
         construct,
         state_name,
