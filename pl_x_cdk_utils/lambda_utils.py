@@ -63,6 +63,41 @@ def implement_lambda_function(
     return l_handler
 
 
+def implement_lambda_layer(
+    construct,
+    layer_name,
+    layer_path,
+    runtimes=None,
+    description=None
+):
+    """
+    Implement cdk lambda-layer
+    :param construct: object
+                      Stack Scope
+    :param layer_name string
+                      Name of the package(s)
+    :param layer_path: string
+                        path for layer asset
+    :param runtimes: object
+                    Lambda runtime object for python programming language
+                    and version
+    :param description: string
+                        Information about the layer
+    :return: object
+             Lambda handler
+    """
+    runtimes = runtimes if runtimes else [_lambda.Runtime.PYTHON_3_8,
+                                          _lambda.Runtime.PYTHON_3_9]
+    description = description if description else f"Layer for {layer_name}"
+    layer = _lambda.LayerVersion(
+            construct, layer_name,
+            code=lambda_.Code.from_asset(layer_path),
+            compatible_runtimes=runtimes,
+            description=description
+            )
+    return layer
+
+
 def get_layer_from_arn(construct, layer_name, version, id=None):
     """
     Get lambda layer by ARN
