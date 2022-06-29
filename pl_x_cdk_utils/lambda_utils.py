@@ -91,7 +91,7 @@ def implement_lambda_layer(
     description = description if description else f"Layer for {layer_name}"
     layer = _lambda.LayerVersion(
             construct, layer_name,
-            code=lambda_.Code.from_asset(layer_path),
+            code=_lambda.Code.from_asset(layer_path),
             compatible_runtimes=runtimes,
             description=description
             )
