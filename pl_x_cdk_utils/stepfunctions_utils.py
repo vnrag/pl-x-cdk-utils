@@ -23,6 +23,7 @@ def deploy_state_machine(
     role=None,
     log_group=None,
     log_level=sfn.LogLevel.ALL,
+    timeout=None,
 ):
     """
      Deploy state machine
@@ -53,6 +54,7 @@ def deploy_state_machine(
             definition=definition,
             role=role,
             logs=sfn.LogOptions(destination=log_group, level=log_level),
+            timeout=timeout,
         )
     else:
         state_machine = sfn.StateMachine(
@@ -61,6 +63,7 @@ def deploy_state_machine(
             state_machine_name=name,
             definition=definition,
             logs=sfn.LogOptions(destination=log_group, level=log_level),
+            timeout=timeout,
         )
     return state_machine
 
@@ -280,9 +283,15 @@ def get_map_state(
     return state
 
 
-def get_parallel_state(construct, state_name="Parallel State",
-                       comment=None, input_path="$", output_path=None,
-                       result_path=None, result_selector=None):
+def get_parallel_state(
+    construct,
+    state_name="Parallel State",
+    comment=None,
+    input_path="$",
+    output_path=None,
+    result_path=None,
+    result_selector=None,
+):
     """
     Get Parallel state
     Parameters
@@ -312,8 +321,8 @@ def get_parallel_state(construct, state_name="Parallel State",
         input_path=input_path,
         result_path=result_path,
         output_path=output_path,
-        result_selector=result_selector
-            )
+        result_selector=result_selector,
+    )
     return state
 
 
@@ -383,8 +392,10 @@ def get_pass_state(
     """
     if result is not None:
         result = (
-            sfn.Result.from_json_path_at(result) if path else
-            sfn.Result.from_object(result))
+            sfn.Result.from_json_path_at(result)
+            if path
+            else sfn.Result.from_object(result)
+        )
     state = sfn.Pass(
         construct,
         state_name,
