@@ -760,6 +760,7 @@ def add_sfn_tasks_emr_step(
         args=args,
         action_on_failure=sfn_tasks.ActionOnFailure.CONTINUE,
         result_path="$.task",
+        result_selector={"task_result.$": "$.SdkHttpMetadata.HttpStatusCode"},
     )
 
     return emr_step
