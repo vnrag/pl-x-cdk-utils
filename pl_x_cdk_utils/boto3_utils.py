@@ -132,6 +132,19 @@ def get_files_under_given_bucket_prefix(bucket, prefix):
     return files_path_list
 
 
+def get_sub_folders_under_given_prefix(bucket, s3_prefix):
+    client = boto3.client('s3')
+    response = client.list_objects(
+        Bucket=bucket, Prefix=s3_prefix ,Delimiter='/')
+
+    sub_folders = []
+    if 'CommonPrefixes' in response:
+        for o in response.get('CommonPrefixes'):
+            sub_folders.append(o.get('Prefix'))
+
+    return sub_folders
+
+
 def get_cross_account_credentials(
         account_id, role_name,
         region_name='eu-central-1'

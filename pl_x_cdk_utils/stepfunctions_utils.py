@@ -725,6 +725,7 @@ def create_sfn_tasks_emr_cluster(
         ),
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
+        step_concurrency_level=cluster_config["step_concurrency_level"],
         # tags=[CfnTag(key="key", value="value")],
         visible_to_all_users=True,
         result_path="$.cluster",
@@ -735,9 +736,10 @@ def create_sfn_tasks_emr_cluster(
 
 def add_sfn_tasks_emr_step(
     scope: Stack,
-    step_name: str,
     jar: str,
     args: list = [],
+    step_name: str = "",
+    jar_step_name: object = None,
 ) -> eas:
     """Add execution step to the EMR cluster
 
@@ -745,6 +747,7 @@ def add_sfn_tasks_emr_step(
         scope (Stack): scope of the Stack
         step_name (str): name of the step in the step function
         jar (str): name of the jar file
+        jar_step_name(obj, optional): Name of the jar step
         args (list, optional): list of args to execute in the EMR cluster.
         Defaults to [].
 
@@ -753,13 +756,14 @@ def add_sfn_tasks_emr_step(
     """
     emr_step = eas(
         scope,
-        step_name,
+        step_name if step_name else args[-1].upper(),
         cluster_id=sfn.JsonPath.string_at("$.cluster.ClusterId"),
-        name=step_name,
+        name=jar_step_name if jar_step_name else step_name,  # type: ignore
         jar=jar,
         args=args,
         action_on_failure=sfn_tasks.ActionOnFailure.CONTINUE,
         result_path="$.task",
+        result_selector={"task_result.$": "$.SdkHttpMetadata.HttpStatusCode"},
     )
 
     return emr_step

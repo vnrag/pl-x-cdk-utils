@@ -138,3 +138,25 @@ def add_usage_plan_to_api(api_object, name, id=None, quota=None, throttle=None):
         param_id, name=name, quota=quota, throttle=throttle
     )
     return updated_api
+
+
+def get_throttling_per_method(method, rate_limit=10000, burst_limit=10000):
+    """
+    Add usage plan to API
+    :param method: object
+                       API method object
+    :param rate_limit: integer
+                 Value for rate limit
+    :param burst_limit: integer
+                Value for burst limit
+    :return: object
+             Throttling object for method
+    """
+    throttling_per_method = api_gateway.ThrottlingPerMethod(
+            method=method,
+            throttle=api_gateway.ThrottleSettings(
+                    rate_limit=rate_limit,
+                    burst_limit=burst_limit
+                    )
+            )
+    return throttling_per_method
