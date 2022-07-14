@@ -25,7 +25,16 @@ def create_glue_crawler(
                         Prefix we want to use in table
     :param targets: list
                     List of Key, value arguments for target,
-                    eg: [{"path": "s3://bucket/path_to_file"}]
+                    eg: {
+                            "s3Targets": [
+                                {
+                                    "path": f"s3://{bucket_name}/provider/"
+                                },
+                                {
+                                    "path": f"s3://{bucket_name}/provider/"
+                                },
+                            ]
+                        }
     :param configuration: string
                           Additional configurations for glue-crawler
     :param schedule: string
