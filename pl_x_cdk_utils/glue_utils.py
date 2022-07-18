@@ -161,7 +161,7 @@ def prepare_glue_table_columns(
             temp["type"] = glue.Schema.STRING
         elif col_type.lower() in "integer":
             temp["type"] = glue.Schema.INTEGER
-        elif col_type.lower() in "biginy":
+        elif col_type.lower() in "bigint":
             temp["type"] = glue.Schema.BIG_INT
         elif col_type.lower() in "struct":
             temp["type"] = glue.Schema.struct(
