@@ -440,7 +440,8 @@ def get_condition_state(
     return state
 
 
-def get_wait_state(construct, state_name, duration, comment=None):
+def get_wait_state(construct, state_name, duration=None, comment=None,
+                   timestamp_path=None):
     """
     Get wait state for step function
     Parameters
@@ -453,18 +454,23 @@ def get_wait_state(construct, state_name, duration, comment=None):
                Duration for the wait
     comment : string
               Comment for the state
+    timestamp_path: string
+                    Timestamp path for wait
     Returns
     -------
     State object
     """
     comment = comment if comment else f"Waiting For {duration}"
+    wait_time = sfn.WaitTime.timestamp_path(timestamp_path) if timestamp_path \
+        else sfn.WaitTime.duration(Duration.seconds(duration))
     state = sfn.Wait(
         construct,
         state_name,
-        time=sfn.WaitTime.duration(Duration.seconds(duration)),
+        time=wait_time,
         comment=comment,
     )
     return state
+
 
 
 def get_succeed_state(construct, state_name="Succeeded"):
@@ -726,7 +732,7 @@ def create_sfn_tasks_emr_cluster(
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
-        # tags=[CfnTag(key="key", value="value")],
+        tags=cluster_config['tags'],
         visible_to_all_users=True,
         result_path="$.cluster",
     )

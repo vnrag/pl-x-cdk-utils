@@ -110,8 +110,8 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
     core_instance_config = config['core_instance_config'] if \
         'core_instance_config' in config else [{"InstanceType": instance}]
     core_on_demand_key = "TargetOnDemandCapacity.$" if \
-        "core_on_demand" in config else "TargetOnDemandCapacity"
-    core_on_demand_val = config["core_on_demand"] if \
+        "TargetOnDemandCapacity.$" in config else "TargetOnDemandCapacity"
+    core_on_demand_val = config["TargetOnDemandCapacity.$"] if \
         "TargetOnDemandCapacity.$" in config else core_on_demand
     instance_type_config_key = "InstanceTypeConfigs.$" if \
         "InstanceTypeConfigs.$" in config else "InstanceTypeConfigs"
