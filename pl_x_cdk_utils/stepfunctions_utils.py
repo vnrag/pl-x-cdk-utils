@@ -732,7 +732,7 @@ def create_sfn_tasks_emr_cluster(
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
-        # tags=[CfnTag(key="key", value="value")],
+        tags=cluster_config['tags'],
         visible_to_all_users=True,
         result_path="$.cluster",
     )
