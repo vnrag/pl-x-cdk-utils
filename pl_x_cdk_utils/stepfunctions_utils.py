@@ -153,6 +153,7 @@ def get_trigger_step_function_state(
     input_path="$",
     result_path="$.sfn_invoke",
     output_path="$",
+    name=None,
     integration_pattern=sfn.IntegrationPattern.RUN_JOB,
 ):
     """
@@ -173,6 +174,8 @@ def get_trigger_step_function_state(
                  Output path for the result after the trigger
     integration_pattern : object
                           Integration pattern object
+    name: string
+          Name of the step-function execution
     Returns
     -------
     State object
@@ -185,6 +188,7 @@ def get_trigger_step_function_state(
         input_path=input_path,
         result_path=result_path,
         output_path=output_path,
+        name=name
     )
     return state
 
