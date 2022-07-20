@@ -2,7 +2,8 @@ import uuid
 from aws_cdk import aws_autoscaling as autoscaling
 
 
-def get_autoscaling_group(construct, vpc, id=None, instance_type=None,
+def get_autoscaling_group(construct, vpc, id=None,
+                          auto_scaling_group_name=None, instance_type=None,
                           machine_image=None, min_capacity=None,
                           max_capacity=None):
     """
@@ -15,6 +16,8 @@ def get_autoscaling_group(construct, vpc, id=None, instance_type=None,
           IVPC object
     id : string
          Logical id
+    auto_scaling_group_name: string
+                             Name for the autoscaling group
     instance_type : object
                     Instance type object
     machine_image : object
@@ -30,6 +33,7 @@ def get_autoscaling_group(construct, vpc, id=None, instance_type=None,
     id = id if id else f"autoscaling-profile-{uuid.uuid4()}"
     group = autoscaling.AutoScalingGroup(
             construct, id=id, vpc=vpc,
+            auto_scaling_group_name=auto_scaling_group_name,
             instance_type=instance_type,
             machine_image=machine_image,
             min_capacity=min_capacity,
