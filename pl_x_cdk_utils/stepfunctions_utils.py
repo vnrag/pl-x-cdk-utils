@@ -1,8 +1,8 @@
 from aws_cdk import (
     Stack,
     Duration,
-    aws_iam as iam,
     aws_stepfunctions as sfn,
+    aws_ecs as ecs,
     aws_stepfunctions_tasks as sfn_tasks,
 )
 from aws_cdk.aws_stepfunctions_tasks import (
@@ -191,6 +191,87 @@ def get_trigger_step_function_state(
         name=name
     )
     return state
+
+
+def run_ecs_task(
+    construct,
+    state_name,
+    cluster,
+    task_definition,
+    launch_target=sfn_tasks.EcsFargateLaunchTarget(
+            platform_version=ecs.FargatePlatformVersion.LATEST),
+    container_overrides=None,
+    timeout=None,
+    integration_pattern=None,
+    assign_public_ip=None,
+    security_groups=None,
+    subnets=None,
+    comment=None,
+    heartbeat=None,
+    input_path="$",
+    result_path="$.sfn_invoke",
+    output_path="$",
+    result_selector=None,
+
+):
+    """
+    Trigger state machine
+    Parameters
+    ----------
+    construct : object
+                Stack Scope
+    state_name : string
+                 Name for the state
+    cluster : object
+              Cluster object for Task
+    task_definition : object
+              Task definition object for ECS Task
+    launch_target: object
+               Target object for the ECS task
+    container_overrides: List of objects
+                        List of container attributes for the task
+    timeout: object
+             Duration object for the timeout
+    integration_pattern: object
+                        Step-function state pattern for the job
+    assign_public_ip: bool
+                      Boolean value to determine if we assign public ip
+    security_groups: object
+                     ISecurityGroup object
+    subnets: object
+             SubnetSelection object
+    comment: string
+             Comment for the state
+    heartbeat: object
+               Duration object for the timeout
+    input_path : string
+                 Input path for the step-function to be triggered
+    result_path : string
+                 Result path for the result after the trigger
+    output_path : string
+                 Output path for the result after the trigger
+    result_selector: dict
+                 Result selector the result on the result
+
+    Returns
+    -------
+    State object
+    """
+
+    invoke_ecs_task_step = sfn_tasks.EcsRunTask(
+            construct, state_name,
+            timeout=timeout, cluster=cluster,
+            task_definition=task_definition,
+            container_overrides=container_overrides,
+            integration_pattern=integration_pattern,
+            launch_target=launch_target, assign_public_ip=assign_public_ip,
+            security_groups=security_groups, subnets=subnets,
+            comment=comment, heartbeat=heartbeat,
+            input_path=input_path, output_path=output_path,
+            result_path=result_path, result_selector=result_selector
+            )
+
+    return invoke_ecs_task_step
 
 
 def get_aws_service_call_state(
