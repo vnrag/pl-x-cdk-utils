@@ -188,7 +188,7 @@ def get_trigger_step_function_state(
         input_path=input_path,
         result_path=result_path,
         output_path=output_path,
-        name=name
+        name=name,
     )
     return state
 
@@ -199,7 +199,8 @@ def run_ecs_task(
     cluster,
     task_definition,
     launch_target=sfn_tasks.EcsFargateLaunchTarget(
-            platform_version=ecs.FargatePlatformVersion.LATEST),
+        platform_version=ecs.FargatePlatformVersion.LATEST
+    ),
     container_overrides=None,
     timeout=None,
     integration_pattern=None,
@@ -212,7 +213,6 @@ def run_ecs_task(
     result_path="$.sfn_invoke",
     output_path="$",
     result_selector=None,
-
 ):
     """
     Trigger state machine
@@ -259,17 +259,24 @@ def run_ecs_task(
     """
 
     invoke_ecs_task_step = sfn_tasks.EcsRunTask(
-            construct, state_name,
-            timeout=timeout, cluster=cluster,
-            task_definition=task_definition,
-            container_overrides=container_overrides,
-            integration_pattern=integration_pattern,
-            launch_target=launch_target, assign_public_ip=assign_public_ip,
-            security_groups=security_groups, subnets=subnets,
-            comment=comment, heartbeat=heartbeat,
-            input_path=input_path, output_path=output_path,
-            result_path=result_path, result_selector=result_selector
-            )
+        construct,
+        state_name,
+        timeout=timeout,
+        cluster=cluster,
+        task_definition=task_definition,
+        container_overrides=container_overrides,
+        integration_pattern=integration_pattern,
+        launch_target=launch_target,
+        assign_public_ip=assign_public_ip,
+        security_groups=security_groups,
+        subnets=subnets,
+        comment=comment,
+        heartbeat=heartbeat,
+        input_path=input_path,
+        output_path=output_path,
+        result_path=result_path,
+        result_selector=result_selector,
+    )
 
     return invoke_ecs_task_step
 
@@ -525,8 +532,9 @@ def get_condition_state(
     return state
 
 
-def get_wait_state(construct, state_name, duration=None, comment=None,
-                   timestamp_path=None):
+def get_wait_state(
+    construct, state_name, duration=None, comment=None, timestamp_path=None
+):
     """
     Get wait state for step function
     Parameters
@@ -546,8 +554,11 @@ def get_wait_state(construct, state_name, duration=None, comment=None,
     State object
     """
     comment = comment if comment else f"Waiting For {duration}"
-    wait_time = sfn.WaitTime.timestamp_path(timestamp_path) if timestamp_path \
+    wait_time = (
+        sfn.WaitTime.timestamp_path(timestamp_path)
+        if timestamp_path
         else sfn.WaitTime.duration(Duration.seconds(duration))
+    )
     state = sfn.Wait(
         construct,
         state_name,
@@ -555,7 +566,6 @@ def get_wait_state(construct, state_name, duration=None, comment=None,
         comment=comment,
     )
     return state
-
 
 
 def get_succeed_state(construct, state_name="Succeeded"):
@@ -817,7 +827,7 @@ def create_sfn_tasks_emr_cluster(
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
-        tags=cluster_config['tags'],
+        tags=cluster_config["tags"],
         visible_to_all_users=True,
         result_path="$.cluster",
     )
@@ -852,7 +862,7 @@ def add_sfn_tasks_emr_step(
         name=jar_step_name if jar_step_name else step_name,  # type: ignore
         jar=jar,
         args=args,
-        action_on_failure=sfn_tasks.ActionOnFailure.CONTINUE,
+        action_on_failure=sfn_tasks.ActionOnFailure.TERMINATE_CLUSTER,
         result_path="$.task",
         result_selector={"task_result.$": "$.SdkHttpMetadata.HttpStatusCode"},
     )
