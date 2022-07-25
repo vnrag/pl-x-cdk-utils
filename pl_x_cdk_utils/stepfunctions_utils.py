@@ -742,7 +742,7 @@ def create_sfn_tasks_instances(
         emr_managed_slave_security_group=cluster_config[
             "emr_managed_slave_security_group"
         ],
-        # keep_job_flow_alive_when_no_steps=True,
+        # keep_job_flow_alive_when_no_steps=False,
         termination_protected=False,
         instance_fleets=[
             create_sfn_tasks_instance_fleet(
@@ -862,7 +862,7 @@ def add_sfn_tasks_emr_step(
         name=jar_step_name if jar_step_name else step_name,  # type: ignore
         jar=jar,
         args=args,
-        action_on_failure=sfn_tasks.ActionOnFailure.TERMINATE_CLUSTER,
+        action_on_failure=sfn_tasks.ActionOnFailure.CONTINUE,
         result_path="$.task",
         result_selector={"task_result.$": "$.SdkHttpMetadata.HttpStatusCode"},
     )
