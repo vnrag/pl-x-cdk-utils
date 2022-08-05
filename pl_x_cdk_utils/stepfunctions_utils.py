@@ -784,6 +784,7 @@ def create_sfn_tasks_emr_cluster(
     step_name: str,
     cluster_name: str,
     cluster_config,
+    prepare_path=True
 ) -> ecc:
     """Create EMR cluster.
 
@@ -792,6 +793,7 @@ def create_sfn_tasks_emr_cluster(
         step_name (str): step name in the step function
         cluster_name (str): cluster name
         cluster_config (dict): configurations necessary for the cluster
+        prepare_path (bool): boolean to check if path needs to prepared or not
 
     Returns:
         ecc: EMR cluster
@@ -816,18 +818,18 @@ def create_sfn_tasks_emr_cluster(
                     path=prepare_s3_path(
                         cluster_config["bootstrap"]["bucket"],
                         cluster_config["bootstrap"]["bootstrap_uri"],
-                    ),
+                    ) if prepare_path else cluster_config['bootstrap_uri'],
                 ),
             )
         ],
         log_uri=prepare_s3_path(
             cluster_config["log"]["bucket"],
             cluster_config["log"]["uri"],
-        ),
+        ) if prepare_path else cluster_config['log_uri'],
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
-        tags=cluster_config["tags"],
+        tags=cluster_config['tags'],
         visible_to_all_users=True,
         result_path="$.cluster",
     )
