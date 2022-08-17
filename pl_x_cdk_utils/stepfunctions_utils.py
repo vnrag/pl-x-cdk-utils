@@ -44,7 +44,8 @@ def deploy_state_machine(
     :return: object
              State machine object
     """
-    log_group = log_group if log_group else create_log_group(construct, name=f"{name}")
+    log_group = log_group if log_group else create_log_group(
+            construct, name=f"/aws/vendedlogs/states/{name}")
     param_id = id if id else f"profile-for-state-machine-{name}"
     if role:
         state_machine = sfn.StateMachine(
