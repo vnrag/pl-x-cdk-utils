@@ -44,8 +44,11 @@ def deploy_state_machine(
     :return: object
              State machine object
     """
-    log_group = log_group if log_group else create_log_group(
-            construct, name=f"/aws/vendedlogs/states/{name}")
+    log_group = (
+        log_group
+        if log_group
+        else create_log_group(construct, name=f"/aws/vendedlogs/states/{name}")
+    )
     param_id = id if id else f"profile-for-state-machine-{name}"
     if role:
         state_machine = sfn.StateMachine(
@@ -156,7 +159,7 @@ def get_trigger_step_function_state(
     output_path="$",
     name=None,
     integration_pattern=sfn.IntegrationPattern.RUN_JOB,
-    result_selector=None
+    result_selector=None,
 ):
     """
     Trigger state machine
@@ -683,27 +686,44 @@ def create_sfn_tasks_instance_fleet(
     fleet = None
 
     if instance_role_type == "TASK":
-        fleet = ecc.InstanceFleetConfigProperty(
-            instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
-            # the properties below are optional
-            instance_type_configs=[
-                ecc.InstanceTypeConfigProperty(
-                    instance_type=instance,
-                    bid_price=bid_price,
-                    weighted_capacity=weighted_capacity,
-                )
-                for instance in instance_type
-            ],
-            launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
-                spot_specification=ecc.SpotProvisioningSpecificationProperty(
-                    timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
-                    timeout_duration_minutes=600,
+        if target_spot_capacity > 0:
+            fleet = ecc.InstanceFleetConfigProperty(
+                instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
+                # the properties below are optional
+                instance_type_configs=[
+                    ecc.InstanceTypeConfigProperty(
+                        instance_type=instance,
+                        bid_price=bid_price,
+                        weighted_capacity=weighted_capacity,
+                    )
+                    for instance in instance_type
+                ],
+                launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
+                    spot_specification=ecc.SpotProvisioningSpecificationProperty(
+                        timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
+                        timeout_duration_minutes=600,
+                    ),
                 ),
-            ),
-            name=instance_role_type,
-            target_on_demand_capacity=target_on_demand_capacity,
-            target_spot_capacity=target_spot_capacity,
-        )
+                name=instance_role_type,
+                target_on_demand_capacity=target_on_demand_capacity,
+                target_spot_capacity=target_spot_capacity,
+            )
+        else:
+            fleet = ecc.InstanceFleetConfigProperty(
+                instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
+                # the properties below are optional
+                instance_type_configs=[
+                    ecc.InstanceTypeConfigProperty(
+                        instance_type=instance,
+                        bid_price=bid_price,
+                        weighted_capacity=weighted_capacity,
+                    )
+                    for instance in instance_type
+                ],
+                name=instance_role_type,
+                target_on_demand_capacity=target_on_demand_capacity,
+                target_spot_capacity=target_spot_capacity,
+            )
     else:
         fleet = ecc.InstanceFleetConfigProperty(
             instance_fleet_type=eval(f"ecc.InstanceRoleType.{instance_role_type}"),
@@ -785,11 +805,7 @@ def create_sfn_tasks_instances(
 
 
 def create_sfn_tasks_emr_cluster(
-    scope: Stack,
-    step_name: str,
-    cluster_name: str,
-    cluster_config,
-    prepare_path=True
+    scope: Stack, step_name: str, cluster_name: str, cluster_config, prepare_path=True
 ) -> ecc:
     """Create EMR cluster.
 
@@ -823,18 +839,22 @@ def create_sfn_tasks_emr_cluster(
                     path=prepare_s3_path(
                         cluster_config["bootstrap"]["bucket"],
                         cluster_config["bootstrap"]["bootstrap_uri"],
-                    ) if prepare_path else cluster_config['bootstrap_uri'],
+                    )
+                    if prepare_path
+                    else cluster_config["bootstrap_uri"],
                 ),
             )
         ],
         log_uri=prepare_s3_path(
             cluster_config["log"]["bucket"],
             cluster_config["log"]["uri"],
-        ) if prepare_path else cluster_config['log_uri'],
+        )
+        if prepare_path
+        else cluster_config["log_uri"],
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
-        tags=cluster_config['tags'],
+        tags=cluster_config["tags"],
         visible_to_all_users=True,
         result_path="$.cluster",
     )
