@@ -160,6 +160,7 @@ def get_trigger_step_function_state(
     name=None,
     integration_pattern=sfn.IntegrationPattern.RUN_JOB,
     result_selector=None,
+    input=input,
 ):
     """
     Trigger state machine
@@ -183,6 +184,8 @@ def get_trigger_step_function_state(
           Name of the step-function execution
     result_selector: dict
           Result selector from the execution
+    input: dict
+          The JSON input for the execution, same as that of StartExecution
     Returns
     -------
     State object
@@ -197,6 +200,7 @@ def get_trigger_step_function_state(
         output_path=output_path,
         result_selector=result_selector,
         name=name,
+        input=input,
     )
     return state
 
