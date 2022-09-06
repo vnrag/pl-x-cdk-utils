@@ -160,7 +160,7 @@ def get_trigger_step_function_state(
     name=None,
     integration_pattern=sfn.IntegrationPattern.RUN_JOB,
     result_selector=None,
-    input=input,
+    input=None,
 ):
     """
     Trigger state machine
