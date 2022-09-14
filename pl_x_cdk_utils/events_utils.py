@@ -15,6 +15,7 @@ def add_event_rule(
     cdk_function="state_machine",
     description="",
     enabled=True,
+    kwargs=None,
 ):
     """
     Event rule for the cdk functionalities
@@ -42,6 +43,8 @@ def add_event_rule(
                         event rule description
     :param enabled: boolean
                         event rule enabled status
+    :param kwargs: dict
+                   Dict with parameters for task
     :return:
     """
     param_id = id if id else f"profile-for-event-{rule_name}"
@@ -71,3 +74,7 @@ def add_event_rule(
                 event=events.RuleTargetInput.from_object(event_input),
             )
         )
+    if cdk_function == "ecs_task":
+        kwargs.update({"platform_version": ecs.FargatePlatformVersion.LATEST})\
+            if "platform_version" not in kwargs else ""
+        event_rule.add_target(targets.EcsTask(**kwargs))
