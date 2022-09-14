@@ -1,3 +1,4 @@
+from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events, aws_events_targets as targets
 
 
