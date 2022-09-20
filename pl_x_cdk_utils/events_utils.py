@@ -78,4 +78,6 @@ def add_event_rule(
     if cdk_function == "ecs_task":
         kwargs.update({"platform_version": ecs.FargatePlatformVersion.LATEST})\
             if "platform_version" not in kwargs else ""
+        kwargs.update({"task_definition": cdk_functionality})\
+            if "task_definition" not in kwargs else ""
         event_rule.add_target(targets.EcsTask(**kwargs))
