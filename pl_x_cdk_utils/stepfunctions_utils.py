@@ -904,6 +904,7 @@ def add_sfn_tasks_emr_step(
 def terminate_sfn_tasks_emr_cluster(
     scope: Stack,
     step_name: str,
+    result_path: str = "$.terminate",
 ) -> etc:
     """Terminate the cluster.
 
@@ -918,7 +919,7 @@ def terminate_sfn_tasks_emr_cluster(
         scope,
         step_name,
         cluster_id=sfn.JsonPath.string_at("$.cluster.ClusterId"),
-        result_path="$.terminate",
+        result_path=result_path,
     )
 
     return terminate_cluster
