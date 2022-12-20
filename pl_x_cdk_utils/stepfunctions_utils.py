@@ -918,6 +918,7 @@ def terminate_sfn_tasks_emr_cluster(
         scope,
         step_name,
         cluster_id=sfn.JsonPath.string_at("$.cluster.ClusterId"),
+        result_path="$.terminate",
     )
 
     return terminate_cluster
