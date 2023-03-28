@@ -169,6 +169,8 @@ def prepare_glue_table_columns(
             temp["type"] = glue.Schema.DOUBLE
         elif col_type.lower() in "timestamp":
             temp["type"] = glue.Schema.TIMESTAMP
+        elif col_type.lower() in "boolean":
+            temp["type"] = glue.Schema.BOOLEAN
         elif col_type.lower() in "struct":
             temp["type"] = glue.Schema.struct(
                 columns=prepare_glue_table_columns(col_details=struct_cols)
