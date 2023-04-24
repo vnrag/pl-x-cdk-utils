@@ -306,7 +306,7 @@ def get_json_for_step_function(arn, input_path=None, input=None,
                                name_path=None, name=None):
     sfn_json = {
         "Type": "Task",
-        "Resource": "arn:aws:states:::states:startExecution.sync",
+        "Resource": "arn:aws:states:::states:startExecution.sync:2",
         "Parameters": {
             "StateMachineArn": arn
         }
