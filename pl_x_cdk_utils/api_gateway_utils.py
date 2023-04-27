@@ -14,7 +14,13 @@ DEFAULT_DEPLOY_OPTIONS = {
 
 
 def deploy_rest_api(
-    construct, api_name, id=None, description=None, api_cors=None, deploy_options=None
+    construct,
+    api_name,
+    id=None,
+    description=None,
+    api_cors=None,
+    deploy_options=None,
+    policy=None,
 ):
     """
     Rest API with api_gateway
@@ -30,6 +36,8 @@ def deploy_rest_api(
                      CORS for the API
     :param deploy_options: object
                            Deploy options with logging level for API
+    :param policy: object
+                           Resource policy for API
     :return: object
              API object
     """
@@ -44,6 +52,7 @@ def deploy_rest_api(
         description=description,
         default_cors_preflight_options=api_cors,
         deploy_options=deploy_options,
+        policy=policy,
     )
     return api
 
