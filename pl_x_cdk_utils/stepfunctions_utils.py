@@ -807,7 +807,11 @@ def create_sfn_tasks_instances(
 
 
 def create_sfn_tasks_emr_cluster(
-    scope: Stack, step_name: str, cluster_name: str, cluster_config, prepare_path=True
+    scope: Stack,
+    step_name: str,
+    cluster_name: str,
+    cluster_config,
+    prepare_path=True,
 ) -> ecc:
     """Create EMR cluster.
 
