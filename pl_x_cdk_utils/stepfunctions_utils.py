@@ -1,8 +1,5 @@
 from aws_cdk import (
-    Stack,
-    Duration,
-    aws_stepfunctions as sfn,
-    aws_ecs as ecs,
+    Duration, Stack, aws_ecs as ecs, aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as sfn_tasks,
 )
 from aws_cdk.aws_stepfunctions_tasks import (
@@ -702,7 +699,8 @@ def create_sfn_tasks_instance_fleet(
                     )
                     for instance in instance_type
                 ],
-                launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
+                launch_specifications=ecc
+                .InstanceFleetProvisioningSpecificationsProperty(
                     spot_specification=ecc.SpotProvisioningSpecificationProperty(
                         timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
                         timeout_duration_minutes=600,
@@ -858,6 +856,12 @@ def create_sfn_tasks_emr_cluster(
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
+        configurations=[
+            ecc.ConfigurationProperty(
+                classification=conf['classification'],
+                properties=conf['properties'],
+            ) for conf in cluster_config
+        ],
         tags=cluster_config["tags"],
         visible_to_all_users=True,
         result_path="$.cluster",
