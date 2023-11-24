@@ -864,7 +864,7 @@ def create_sfn_tasks_emr_cluster(
             ecc.ConfigurationProperty(
                 classification=conf['classification'],
                 properties=conf['properties'],
-            ) for conf in cluster_config
+            ) for conf in cluster_config['configurations']
         ],
         tags=cluster_config["tags"],
         visible_to_all_users=True,
