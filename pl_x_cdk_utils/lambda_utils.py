@@ -14,8 +14,8 @@ def implement_lambda_function(
     runtime=None,
     environment={},
     vpc=None,
-    vpc_subnets={},
-    security_group=[],
+    vpc_subnets=None,
+    security_groups=[],
 ):
     """
     Implement cdk lambda
@@ -64,7 +64,7 @@ def implement_lambda_function(
         environment=environment,
         vpc=vpc,
         vpc_subnets=vpc_subnets,
-        security_groups=security_group,
+        security_groups=security_groups,
     )
 
     return l_handler
