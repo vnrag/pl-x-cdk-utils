@@ -13,6 +13,9 @@ def implement_lambda_function(
     function_name=None,
     runtime=None,
     environment={},
+    vpc=None,
+    vpc_subnets=None,
+    security_group=None,
 ):
     """
     Implement cdk lambda
@@ -59,16 +62,16 @@ def implement_lambda_function(
         role=roles,
         function_name=function_name,
         environment=environment,
+        vpc=vpc,
+        vpc_subnets=vpc_subnets,
+        security_groups=security_group,
     )
+
     return l_handler
 
 
 def implement_lambda_layer(
-    construct,
-    layer_name,
-    layer_path,
-    runtimes=None,
-    description=None
+    construct, layer_name, layer_path, runtimes=None, description=None
 ):
     """
     Implement cdk lambda-layer
@@ -86,15 +89,19 @@ def implement_lambda_layer(
     :return: object
              Lambda handler
     """
-    runtimes = runtimes if runtimes else [_lambda.Runtime.PYTHON_3_8,
-                                          _lambda.Runtime.PYTHON_3_9]
+    runtimes = (
+        runtimes
+        if runtimes
+        else [_lambda.Runtime.PYTHON_3_8, _lambda.Runtime.PYTHON_3_9]
+    )
     description = description if description else f"Layer for {layer_name}"
     layer = _lambda.LayerVersion(
-            construct, layer_name,
-            code=_lambda.Code.from_asset(layer_path),
-            compatible_runtimes=runtimes,
-            description=description
-            )
+        construct,
+        layer_name,
+        code=_lambda.Code.from_asset(layer_path),
+        compatible_runtimes=runtimes,
+        description=description,
+    )
     return layer
 
 
