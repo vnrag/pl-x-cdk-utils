@@ -1,11 +1,15 @@
 from aws_cdk import (
-    Duration, Stack, aws_ecs as ecs, aws_stepfunctions as sfn,
+    Duration,
+    Stack,
+    aws_ecs as ecs,
+    aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as sfn_tasks,
 )
 from aws_cdk.aws_stepfunctions_tasks import (
     EmrAddStep as eas,
     EmrCreateCluster as ecc,
     EmrTerminateCluster as etc,
+    GlueStartJobRun as gsjr,
 )
 
 from pl_x_cdk_utils.helpers import prepare_s3_path
@@ -135,9 +139,11 @@ def step_invoke_lambda_function(
         construct,
         step_name,
         lambda_function=lambda_func,
-        payload=sfn.TaskInput.from_json_path_at(json_path)
-        if path
-        else sfn.TaskInput.from_object(payload),
+        payload=(
+            sfn.TaskInput.from_json_path_at(json_path)
+            if path
+            else sfn.TaskInput.from_object(payload)
+        ),
         input_path=input_path,
         output_path=output_path,
         result_path=result_path,
@@ -699,8 +705,7 @@ def create_sfn_tasks_instance_fleet(
                     )
                     for instance in instance_type
                 ],
-                launch_specifications=ecc
-                .InstanceFleetProvisioningSpecificationsProperty(
+                launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
                     spot_specification=ecc.SpotProvisioningSpecificationProperty(
                         timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
                         timeout_duration_minutes=600,
@@ -842,30 +847,39 @@ def create_sfn_tasks_emr_cluster(
             ecc.BootstrapActionConfigProperty(
                 name="Install external libraries",
                 script_bootstrap_action=ecc.ScriptBootstrapActionConfigProperty(
-                    path=prepare_s3_path(
-                        cluster_config["bootstrap"]["bucket"],
-                        cluster_config["bootstrap"]["bootstrap_uri"],
-                    )
-                    if prepare_path
-                    else cluster_config["bootstrap_uri"],
+                    path=(
+                        prepare_s3_path(
+                            cluster_config["bootstrap"]["bucket"],
+                            cluster_config["bootstrap"]["bootstrap_uri"],
+                        )
+                        if prepare_path
+                        else cluster_config["bootstrap_uri"]
+                    ),
                 ),
             )
         ],
-        log_uri=prepare_s3_path(
-            cluster_config["log"]["bucket"],
-            cluster_config["log"]["uri"],
-        )
-        if prepare_path
-        else cluster_config["log_uri"],
+        log_uri=(
+            prepare_s3_path(
+                cluster_config["log"]["bucket"],
+                cluster_config["log"]["uri"],
+            )
+            if prepare_path
+            else cluster_config["log_uri"]
+        ),
         release_label=cluster_config["release_label"],
         scale_down_behavior=ecc.EmrClusterScaleDownBehavior.TERMINATE_AT_TASK_COMPLETION,
         step_concurrency_level=cluster_config["step_concurrency_level"],
-        configurations=[
-            ecc.ConfigurationProperty(
-                classification=conf['classification'],
-                properties=conf['properties'],
-            ) for conf in cluster_config['configurations']
-        ] if cluster_config['configurations'] else [],
+        configurations=(
+            [
+                ecc.ConfigurationProperty(
+                    classification=conf["classification"],
+                    properties=conf["properties"],
+                )
+                for conf in cluster_config["configurations"]
+            ]
+            if cluster_config["configurations"]
+            else []
+        ),
         tags=cluster_config["tags"],
         visible_to_all_users=True,
         result_path="$.cluster",
@@ -931,3 +945,33 @@ def terminate_sfn_tasks_emr_cluster(
     )
 
     return terminate_cluster
+
+
+def add_sfn_tasks_glue_job_run_step(
+    scope: Stack,
+    trigger_conf: dict,
+    glue_job_name: str,
+    integration_pattern: sfn.IntegrationPattern,
+    arguments: sfn.TaskInput,
+) -> gsjr:
+    """Add job run step to Glue
+
+    Args:
+        scope (Stack): scope of the Stack
+        trigger_conf (dict): configuration for glue job
+        glue_job_name (str): name of the glue job
+        integration_pattern (sfn.IntegrationPattern): type of integration
+        arguments (sfn.TaskInput): arguments to the glue job
+
+    Returns:
+        gsjr: step to run the glue job
+    """
+    glue_step = gsjr(
+        scope,
+        trigger_conf["arguments"]["--job_name"],
+        glue_job_name=glue_job_name,
+        integration_pattern=integration_pattern,
+        arguments=arguments,
+    )
+
+    return glue_step
