@@ -211,6 +211,27 @@ def create_glue_python_etl_job(
     worker_type: glue.WorkerType = glue.WorkerType.G_1_X,
     timeout: cdk.Duration = cdk.Duration.minutes(60),
 ) -> glue.Job:
+    """Create glue Python etl job.
+
+    Args:
+        construct (Stack): scope of the Stack
+        id (str): id for glue job
+        job_name (str): glue job name
+        script_path (str): python script path for glue
+        bucket_obj (object): s3 bucket object
+        extra_jar_path (str): path for extra jars
+        glue_role (iam.Role): role for glue job
+        default_arguments (dict): default arguments for glue job
+        spark_ui_enabled (bool): flag to enable/disable spark ui
+        glue_version (glue.GlueVersion): glue version
+        tags (dict): tags configuration
+        worker_count (int): glue job worker count
+        worker_type (glue.WorkerType): job worker type
+        timeout (cdk.Duration): timeout duration
+
+    Returns:
+        glue.Job: create glue job object
+    """
     job = glue.Job(
         construct,
         f"{job_name}_{id}",
@@ -251,6 +272,19 @@ def create_glue_job_trigger(
     start_on_creation: bool = True,
     trigger_type: str = "SCHEDULED",
 ) -> aws_glue.CfnTrigger:
+    """Trigger to schedule glue jobs.
+
+    Args:
+        construct (Stack): scope of the Stack
+        job (glue.Job): created glue job object
+        trigger_conf (dict): configuration for the glue job
+        timeout (int): job timeout
+        start_on_creation (bool): flag to identify job run policy
+        trigger_type (str): type of job run
+
+    Returns:
+        aws_glue.CfnTrigger: associate the type of trigger for the glue job
+    """
     aws_glue.CfnTrigger(
         construct,
         f"{trigger_conf['arguments']['--job_name']}_glue_job_trigger",

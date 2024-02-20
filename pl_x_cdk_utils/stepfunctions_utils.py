@@ -949,7 +949,7 @@ def terminate_sfn_tasks_emr_cluster(
 
 def add_sfn_tasks_glue_job_run_step(
     scope: Stack,
-    trigger_conf: dict,
+    id: str,
     glue_job_name: str,
     integration_pattern: sfn.IntegrationPattern,
     arguments: sfn.TaskInput,
@@ -958,7 +958,7 @@ def add_sfn_tasks_glue_job_run_step(
 
     Args:
         scope (Stack): scope of the Stack
-        trigger_conf (dict): configuration for glue job
+        id (str): id for glue job
         glue_job_name (str): name of the glue job
         integration_pattern (sfn.IntegrationPattern): type of integration
         arguments (sfn.TaskInput): arguments to the glue job
@@ -968,7 +968,7 @@ def add_sfn_tasks_glue_job_run_step(
     """
     glue_step = gsjr(
         scope,
-        trigger_conf["arguments"]["--job_name"],
+        id,
         glue_job_name=glue_job_name,
         integration_pattern=integration_pattern,
         arguments=arguments,
