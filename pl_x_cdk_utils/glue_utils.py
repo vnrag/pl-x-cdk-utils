@@ -1,4 +1,11 @@
-from aws_cdk import aws_glue, aws_glue_alpha as glue
+import aws_cdk as cdk
+
+from aws_cdk import (
+    aws_glue,
+    aws_glue_alpha as glue,
+    aws_iam as iam,
+    Stack,
+)
 
 
 def create_glue_crawler(
@@ -186,3 +193,77 @@ def prepare_glue_table_columns(
         columns.append(temp)
 
     return columns
+
+
+def create_glue_python_etl_job(
+    construct: Stack,
+    id: str,
+    job_name: str,
+    script_path: str,
+    bucket_obj: object,
+    extra_jar_path: str,
+    glue_role: iam.Role,
+    default_arguments: dict = {},
+    spark_ui_enabled: bool = True,
+    glue_version: glue.GlueVersion = glue.GlueVersion.V3_0,
+    tags: dict = {},
+    worker_count: int = 2,
+    worker_type: glue.WorkerType = glue.WorkerType.G_1_X,
+    timeout: cdk.Duration = cdk.Duration.minutes(60),
+) -> glue.Job:
+    job = glue.Job(
+        construct,
+        f"{job_name}_{id}",
+        job_name=job_name,
+        spark_ui=glue.SparkUIProps(enabled=spark_ui_enabled),
+        executable=glue.JobExecutable.python_etl(
+            glue_version=glue_version,
+            python_version=glue.PythonVersion.THREE,
+            script=glue.Code.from_asset(
+                script_path,
+            ),
+            extra_jars=[
+                glue.Code.from_bucket(
+                    bucket_obj,
+                    extra_jar_path,
+                ),
+            ],
+        ),
+        continuous_logging=glue.ContinuousLoggingProps(
+            enabled=True,
+        ),
+        default_arguments=default_arguments,
+        role=glue_role,
+        tags=tags,
+        worker_count=worker_count,
+        worker_type=worker_type,
+        timeout=timeout,
+    )
+
+    return job
+
+
+def create_glue_job_trigger(
+    construct: Stack,
+    job: glue.Job,
+    trigger_conf: dict,
+    timeout: int = 60,
+    start_on_creation: bool = True,
+    trigger_type: str = "SCHEDULED",
+) -> aws_glue.CfnTrigger:
+    aws_glue.CfnTrigger(
+        construct,
+        f"{trigger_conf['arguments']['--job_name']}_glue_job_trigger",
+        actions=[
+            aws_glue.CfnTrigger.ActionProperty(
+                arguments=trigger_conf["arguments"],
+                job_name=job.job_name,
+                timeout=timeout,
+            )
+        ],
+        type=trigger_type,
+        # the properties below are optional
+        name=f"{trigger_conf['arguments']['--job_name']}_glue_job_trigger",
+        schedule=trigger_conf["schedule"],
+        start_on_creation=start_on_creation,
+    )
