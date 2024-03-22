@@ -158,6 +158,11 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
                                     "TimeoutAction": "TERMINATE_CLUSTER"
                                 }
                             },
+                            "ResizeSpecifications": {
+                                "SpotResizeSpecification": {
+                                    "TimeoutDurationMinutes": 120
+                                }
+                            },
                             instance_type_config_key: instance_type_config_val,
                         }
                     ],
