@@ -195,6 +195,33 @@ def prepare_glue_table_columns(
     return columns
 
 
+def create_glue_python_shell_job(
+    construct: Stack,
+    id: str,
+    command: aws_glue.CfnJob.JobCommandProperty,
+    role: str,
+    glue_version: str = "4.0",
+    name: str,
+    default_arguments: dict = {},
+    timeout:int=60,
+    tags: dict,
+):
+    job = aws_glue.CfnJob(
+        construct,
+        id,
+        command=command,
+        role=role,
+        # the properties below are optional
+        glue_version=glue_version,
+        name=name,
+        default_arguments=default_arguments,
+        timeout=timeout,
+        tags=tags,
+    )
+
+    return job
+
+
 def create_glue_python_etl_job(
     construct: Stack,
     id: str,
