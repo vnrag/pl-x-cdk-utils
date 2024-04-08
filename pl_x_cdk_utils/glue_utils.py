@@ -205,7 +205,7 @@ def create_glue_python_etl_job(
     glue_role: iam.Role,
     default_arguments: dict = {},
     spark_ui_enabled: bool = True,
-    glue_version: glue.GlueVersion = glue.GlueVersion.V3_0,
+    glue_version: glue.GlueVersion = glue.GlueVersion.V4_0,
     tags: dict = {},
     worker_count: int = 2,
     worker_type: glue.WorkerType = glue.WorkerType.G_1_X,
