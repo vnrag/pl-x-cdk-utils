@@ -5,15 +5,12 @@ NAME = "pl_x_cdk_utils"
 DESCRIPTION = "Public VNR package with AWS-CDK built in functions and " \
               "boto3 helpers"
 URL = "https://github.com/vnrag/pl-x-cdk-utils"
-VERSION = "0.1.0"
+VERSION = "0.1.3"
 REQUIRES_PYTHON = ">=3.8.0"
 
 # Packages required
 REQUIRED = [
-        "boto3",
-        "aws-cdk-lib==2.21.1",
-        "constructs>=10.0.0,<11.0.0",
-        "aws_cdk.aws_glue_alpha",
+        "boto3"
         ]
 
 setup(
