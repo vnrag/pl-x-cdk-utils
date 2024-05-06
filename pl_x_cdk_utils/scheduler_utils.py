@@ -38,6 +38,15 @@ def get_schedule(
     :param target_type: string e.g. "lambda", "ecs", "glue", "stepfunction"
     :param resource_arn: string
     :param role_arn: string
+    :param cluster_arn string
+    :param subnet_ids list
+    :param security_group_id string
+    :param ecs_launch_type string
+    :param ecs_task_count bigint
+    :param ecs_platform_version string
+    :param ecs_vpc_assign_public_ip string
+    :param schedule_input dict
+    :param target aws_scheduler.CfnSchedule.TargetProperty
     :param id: string
     :param flexible_time_window: string defaults to "OFF"
     :param description: string
