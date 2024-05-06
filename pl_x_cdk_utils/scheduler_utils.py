@@ -68,7 +68,7 @@ def get_schedule(
                 role_arn=role_arn,
                 input=json.dumps(
                     {
-                        "TaskDefinition": resource_arn, # noqa
+                        "TaskDefinition": resource_arn,
                         "Cluster": cluster_arn,
                         "Count": ecs_task_count,
                         "LaunchType": ecs_launch_type,
