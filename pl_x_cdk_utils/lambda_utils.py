@@ -16,6 +16,7 @@ def implement_lambda_function(
     vpc=None,
     vpc_subnets=None,
     security_groups=[],
+    log_group=None,
 ):
     """
     Implement cdk lambda
@@ -42,6 +43,8 @@ def implement_lambda_function(
                     and version
     :param environment: dict
                         Environment for lambda if needed
+    :param log_group: object
+                      LogGroup to assign to the lambda-function
     :return: object
              Lambda handler
     """
@@ -54,24 +57,33 @@ def implement_lambda_function(
         construct,
         param_id,
         runtime=runtime,
-        code=_lambda.Code.from_asset(lambda_path),
+        code=_lambda.Code.from_asset(
+            lambda_path
+        ),
         handler=handler,
         layers=layers_list,
         memory_size=memory_size,
-        timeout=Duration.seconds(timeout),
+        timeout=Duration.seconds(
+            timeout
+        ),
         role=roles,
         function_name=function_name,
         environment=environment,
         vpc=vpc,
         vpc_subnets=vpc_subnets,
         security_groups=security_groups,
+        log_group=log_group,
     )
 
     return l_handler
 
 
 def implement_lambda_layer(
-    construct, layer_name, layer_path, runtimes=None, description=None
+    construct,
+    layer_name,
+    layer_path,
+    runtimes=None,
+    description=None,
 ):
     """
     Implement cdk lambda-layer
@@ -105,7 +117,12 @@ def implement_lambda_layer(
     return layer
 
 
-def get_layer_from_arn(construct, layer_name, version, id=None):
+def get_layer_from_arn(
+    construct,
+    layer_name,
+    version,
+    id=None,
+):
     """
     Get lambda layer by ARN
     :param construct: object
@@ -129,7 +146,11 @@ def get_layer_from_arn(construct, layer_name, version, id=None):
     return lambda_layer
 
 
-def get_lambda_from_arn(construct, function_name, id=None):
+def get_lambda_from_arn(
+    construct,
+    function_name,
+    id=None,
+):
     """
     Get lambda function by ARN
     :param construct: object
@@ -147,4 +168,31 @@ def get_lambda_from_arn(construct, function_name, id=None):
         param_id,
         f"arn:aws:lambda:{construct.region}:{construct.account}:function:{function_name}",
     )
+    return lambda_function
+
+
+def get_lambda_from_name(
+    construct,
+    function_name,
+    id=None,
+):
+    """
+    Get lambda function by name
+    :param construct: object
+                      Stack Scope
+    :param function_name: string
+                       Name of the function
+    :param id: string
+                logical id of the cdk construct
+    :return: object
+             Lambda function object
+    """
+    param_id = id if id else f"{function_name}"
+
+    lambda_function = _lambda.Function.from_function_name(
+        construct,
+        param_id,
+        "capture_logging_errors",
+    )
+
     return lambda_function
