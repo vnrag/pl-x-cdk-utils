@@ -89,7 +89,7 @@ def get_schedule(
             )
         elif target_type == "lambda":
             target = aws_scheduler.CfnSchedule.TargetProperty(
-                arn="arn:aws:scheduler:::aws-sdk:lambda:invoke",
+                arn=resource_arn,
                 role_arn=role_arn,
                 input=json.dumps(
                     schedule_input
