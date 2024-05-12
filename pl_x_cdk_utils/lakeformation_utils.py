@@ -96,7 +96,7 @@ def set_lakeformation_permission_location(
 
     return aws_lakeformation.CfnPermissions(
         construct,
-        f"LakeFormationPermissionsLocation{role_name}{s3_resource.bucket_name}",
+        f"LakeFormationPermissionsLocation{role_name}{bucket_name_ssm}",
         data_lake_principal=aws_lakeformation.CfnPermissions.
         DataLakePrincipalProperty(
             data_lake_principal_identifier=role.role_arn
