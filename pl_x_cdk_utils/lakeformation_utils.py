@@ -83,7 +83,7 @@ def set_lakeformation_permission_location(
         role_name=role_name,
     )
 
-    bucket_name = aws_ssm.StringParameter.value_from_lookup(
+    bucket_name = aws_ssm.StringParameter.value_for_string_parameter(
         construct,
         parameter_name=bucket_name_ssm,
     )
