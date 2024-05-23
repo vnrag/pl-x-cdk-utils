@@ -15,7 +15,7 @@ def get_schedule(
     ecs_task_count=1,
     ecs_platform_version="LATEST",
     ecs_vpc_assign_public_ip="DISABLED",
-    schedule_input={},
+    schedule_input=None,
     target=None,
     id=None,
     flexible_time_window="OFF",
@@ -60,6 +60,7 @@ def get_schedule(
     """
 
     id = id if id else f"Scheduler-{name}"
+    schedule_input = json.dumps(schedule_input) if schedule_input else None
 
     if not target:
         if target_type == "ecs":
@@ -91,25 +92,19 @@ def get_schedule(
             target = aws_scheduler.CfnSchedule.TargetProperty(
                 arn=resource_arn,
                 role_arn=role_arn,
-                input=json.dumps(
-                    schedule_input
-                ),
+                input=schedule_input,
             )
         elif target_type == "glue":
             target = aws_scheduler.CfnSchedule.TargetProperty(
                 arn="arn:aws:scheduler:::aws-sdk:glue:startJobRun",
                 role_arn=role_arn,
-                input=json.dumps(
-                    schedule_input
-                ),
+                input=schedule_input,
             )
         elif target_type == "stepfunction":
             target = aws_scheduler.CfnSchedule.TargetProperty(
                 arn=resource_arn,
                 role_arn=role_arn,
-                input=json.dumps(
-                    schedule_input
-                ),
+                input=schedule_input,
             )
 
     return aws_scheduler.CfnSchedule(
