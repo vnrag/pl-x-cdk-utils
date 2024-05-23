@@ -151,12 +151,12 @@ def add_success_and_error_subscription_to_log_group(
 
     if success_filter:
         log_group.add_subscription_filter(
-            f"{name}LogGroupErrorSubscription",
+            f"{name}LogGroupSuccessSubscription",
             filter_pattern=logs.FilterPattern.literal(
                 success_filter,
             ),
             destination=destinations.LambdaDestination(
                 lambda_function
             ),
-            filter_name=f"log_subscription_error_{name}",
+            filter_name=f"log_subscription_success_{name}",
         )
