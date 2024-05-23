@@ -15,7 +15,7 @@ def get_schedule(
     ecs_task_count=1,
     ecs_platform_version="LATEST",
     ecs_vpc_assign_public_ip="DISABLED",
-    schedule_input=None,
+    schedule_input={},
     target=None,
     id=None,
     flexible_time_window="OFF",
