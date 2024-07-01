@@ -1,4 +1,5 @@
 aws-cdk-lib==2.140
+aws-cdk.aws-glue-alpha
 constructs
 pytest
 moto
