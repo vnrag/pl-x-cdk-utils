@@ -4,6 +4,9 @@ from aws_cdk import (
     aws_ecs as ecs,
     aws_stepfunctions as sfn,
     aws_stepfunctions_tasks as sfn_tasks,
+    aws_lambda,
+    aws_sqs,
+    aws_emr,
 )
 from aws_cdk.aws_stepfunctions_tasks import (
     EmrAddStep as eas,
@@ -14,6 +17,525 @@ from aws_cdk.aws_stepfunctions_tasks import (
 
 from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
+
+
+class StepFunctionUtils():
+    @staticmethod
+    def from_state_machine_arn(
+        stack: Stack,
+        id: str,
+        state_machine_arn: str,
+    ) -> sfn.IStateMachine:
+        return sfn.StateMachine.from_state_machine_arn(
+            stack,
+            id,
+            state_machine_arn,
+        )
+
+    @staticmethod
+    def from_state_machine_name(
+        stack: Stack,
+        id: str,
+        state_machine_name: str,
+    ) -> sfn.IStateMachine:
+        return sfn.StateMachine.from_state_machine_name(
+            stack,
+            id,
+            state_machine_name,
+        )
+
+    @staticmethod
+    def create_lambda_task(
+        stack: Stack,
+        id: str,
+        lambda_function: aws_lambda.Function,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        """
+        Creates a task which invokes a Lambda function.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the task.
+        - lambda_function (aws_lambda.Function): The Lambda function to invoke.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.TaskStateBase: The State to invoke the Lambda task.
+        """
+
+        return sfn_tasks.LambdaInvoke(
+            stack,
+            id,
+            lambda_function=lambda_function,
+            payload_response_only=True,
+            output_path="$.Payload",
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_sqs_send_message_task(
+        stack: Stack,
+        id: str,
+        queue: aws_sqs.Queue,
+        message_body: str,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        """
+        Creates a task which sends a message to an SQS queue.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the task.
+        - queue (aws_sqs.Queue): The SQS queue to send the message to.
+        - message_body (str): The message body to send.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.TaskStateBase: The State to send the message task.
+        """
+
+        return sfn_tasks.SqsSendMessage(
+            stack,
+            id,
+            queue=queue,
+            message_body=sfn.TaskInput.from_text(
+                message_body
+            ),
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_state_machine(
+        stack: Stack,
+        id: str,
+        definition: sfn.IChainable,
+        **kwargs,
+    ) -> sfn.StateMachine:
+        """
+        Creates a State Machine based on the given definition.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the State Machine.
+        - definition (sfn.IChainable): The definition of the State Machine.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.StateMachine: The State Machine.
+        """
+
+        return sfn.StateMachine(
+            stack,
+            id,
+            definition=definition,
+            timeout=Duration.minutes(5),
+            **kwargs,
+        )
+
+    @staticmethod
+    def wait_task(
+        stack: Stack,
+        id: str,
+        seconds: int,
+        **kwargs,
+    ) -> sfn.Wait:
+        """
+        Creates a Wait task.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the task.
+        - seconds (int): The number of seconds to wait.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Wait: The Wait task.
+        """
+
+        return sfn.Wait(
+            stack,
+            id,
+            time=sfn.WaitTime.duration(
+                Duration.seconds(
+                    seconds
+                )
+            ),
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_step_function_execution_task(
+        stack: Stack,
+        id: str,
+        state_machine: sfn.IStateMachine,
+        input: dict,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        return sfn_tasks.StepFunctionsStartExecution(
+            stack,
+            id,
+            state_machine=state_machine,
+            input=sfn.TaskInput.from_object(input),
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_condition(
+        condition_type: str,
+        **kwargs,
+    ) -> sfn.Condition:
+        """
+        Create a condition for a Choice state.
+
+        Args:
+        - condition_type (str): The type of condition (e.g., "boolean_equals",
+                                "string_equals", etc.).
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Condition: The Condition.
+        """
+        if condition_type == "boolean_equals":
+            return sfn.Condition.boolean_equals(**kwargs)
+        elif condition_type == "string_equals":
+            return sfn.Condition.string_equals(**kwargs)
+        elif condition_type == "number_equals":
+            return sfn.Condition.number_equals(**kwargs)
+        elif condition_type == "timestamp_equals":
+            return sfn.Condition.timestamp_equals(**kwargs)
+        elif condition_type == "is_present":
+            return sfn.Condition.is_present(**kwargs)
+        elif condition_type == "is_not_present":
+            return sfn.Condition.is_not_present(**kwargs)
+        elif condition_type == "is_string":
+            return sfn.Condition.is_string(**kwargs)
+        elif condition_type == "is_not_string":
+            return sfn.Condition.is_not_string(**kwargs)
+        elif condition_type == "is_numeric":
+            return sfn.Condition.is_numeric(**kwargs)
+        elif condition_type == "is_not_numeric":
+            return sfn.Condition.is_not_numeric(**kwargs)
+        elif condition_type == "is_boolean":
+            return sfn.Condition.is_boolean(**kwargs)
+        elif condition_type == "is_not_boolean":
+            return sfn.Condition.is_not_boolean(**kwargs)
+        elif condition_type == "is_timestamp":
+            return sfn.Condition.is_timestamp(**kwargs)
+        elif condition_type == "is_not_timestamp":
+            return sfn.Condition.is_not_timestamp(**kwargs)
+        else:
+            raise ValueError(
+                f"Unsupported condition type: {condition_type}"
+            )
+
+    @staticmethod
+    def create_emr_add_step_task(
+        stack: Stack,
+        id: str,
+        cluster_id: str,
+        step: dict,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        return eas(
+            stack,
+            id,
+            cluster_id=cluster_id,
+            step=step,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_choice_state(
+        stack: Stack,
+        id: str,
+        **kwargs,
+    ) -> sfn.Choice:
+        """
+        Creates a Choice state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Choice: The Choice state.
+        """
+
+        return sfn.Choice(
+            stack,
+            id,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_chain_state(
+        stack: Stack,
+        id: str,
+        **kwargs,
+    ) -> sfn.Chain:
+        """
+        Creates a Chain state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Chain: The Chain state.
+        """
+
+        return sfn.Chain(
+            stack,
+            id,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_parallel_state(
+        stack: Stack,
+        id: str,
+        **kwargs,
+    ) -> sfn.Parallel:
+        """
+        Creates a Parallel state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Parallel: The Parallel state.
+        """
+
+        return sfn.Parallel(
+            stack,
+            id,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_map_state(
+        stack: Stack,
+        id: str,
+        max_concurrency: int = 0,
+        **kwargs,
+    ) -> sfn.Map:
+        """
+        Creates a Map state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - max_concurrency (int): The maximum number of concurrent tasks.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Map: The Map state.
+        """
+
+        return sfn.Map(
+            stack,
+            id,
+            max_concurrency=max_concurrency,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_pass_state(
+        stack: Stack,
+        id: str,
+        result: dict = None,
+        **kwargs,
+    ) -> sfn.Pass:
+        """
+        Creates a Pass state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - result (dict): The result to pass to the next state.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Pass: The Pass state.
+        """
+
+        return sfn.Pass(
+            stack,
+            id,
+            result=sfn.Result.from_object(
+                result
+            ) if result else None,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_fail_state(
+        stack: Stack,
+        id: str,
+        error: str,
+        cause: str,
+        **kwargs,
+    ) -> sfn.Fail:
+        """
+        Creates a Fail state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - error (str): The error message.
+        - cause (str): The cause of the error.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Fail: The Fail state.
+        """
+
+        return sfn.Fail(
+            stack,
+            id,
+            error=error,
+            cause=cause,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_succeed_state(
+        stack: Stack,
+        id: str,
+        **kwargs,
+    ) -> sfn.Succeed:
+        """
+        Creates a Succeed state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Succeed: The Succeed state.
+        """
+
+        return sfn.Succeed(
+            stack,
+            id,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_ecs_run_task(
+        stack: Stack,
+        id: str,
+        cluster: ecs.Cluster,
+        task_definition: ecs.TaskDefinition,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        """
+        Creates a task which runs an ECS task.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the task.
+        - cluster (ecs.Cluster): The ECS cluster to run the task in.
+        - task_definition (ecs.TaskDefinition): The task definition to use.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.TaskStateBase: The State to run the ECS task.
+        """
+
+        return sfn_tasks.EcsRunTask(
+            stack,
+            id,
+            cluster=cluster,
+            task_definition=task_definition,
+            **kwargs,
+        )
+
+    @staticmethod
+    def create_emr_cluster(
+        stack: Stack,
+        id: str,
+        cluster_name: str,
+        **kwargs,
+    ) -> aws_emr.CfnCluster:
+        """
+        Creates an EMR cluster.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the cluster.
+        - cluster_name (str): The name of the cluster.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - aws_emr.CfnCluster: The EMR cluster.
+        """
+
+        return aws_emr.CfnCluster(
+            stack, id,
+            name=cluster_name,
+            **kwargs
+        )
+
+    @staticmethod
+    def run_emr_task(
+        stack: Stack,
+        id: str,
+        cluster_id: str,
+        step_name: str,
+        jar: str,
+        args: list,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        """
+        Runs an EMR task.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the task.
+        - cluster_id (str): The id of the EMR cluster.
+        - step_name (str): The name of the step.
+        - jar (str): The JAR file to use.
+        - args (list): The arguments to pass to the JAR file.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.TaskStateBase: The State to run the EMR task.
+        """
+
+        return sfn_tasks.EmrAddStep(
+            stack,
+            id,
+            cluster_id=cluster_id,
+            name=step_name,
+            jar=jar,
+            args=args,
+            **kwargs,
+        )
+
+    @staticmethod
+    def call_aws_service_task(
+        stack: Stack,
+        id: str,
+        service: str,
+        action: str,
+        parameters: dict,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        return sfn_tasks.CallAwsService(
+            stack,
+            id,
+            service=service,
+            action=action,
+            parameters=parameters,
+            **kwargs,
+        )
 
 
 def deploy_state_machine(
@@ -705,7 +1227,8 @@ def create_sfn_tasks_instance_fleet(
                     )
                     for instance in instance_type
                 ],
-                launch_specifications=ecc.InstanceFleetProvisioningSpecificationsProperty(
+                launch_specifications=ecc.\
+                InstanceFleetProvisioningSpecificationsProperty(
                     spot_specification=ecc.SpotProvisioningSpecificationProperty(
                         timeout_action=ecc.SpotTimeoutAction.TERMINATE_CLUSTER,
                         timeout_duration_minutes=600,
