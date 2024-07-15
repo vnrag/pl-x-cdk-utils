@@ -47,6 +47,60 @@ class StepFunctionsUtils():
         )
 
     @staticmethod
+    def create_lambda_task_input_from_dictionary(
+        data: dict,
+    ) -> sfn.TaskInput:
+        """
+        Creates a TaskInput for the invocation of a Lambda Function.
+
+        Args:
+        - data (dict): Dictionary containing input data.
+
+        Returns:
+        - sfn.TaskInput: TaskInput object representing the input data.
+        """
+
+        return sfn.TaskInput.from_object(
+            data,
+        )
+
+    @staticmethod
+    def create_lambda_task_input_from_json_path(
+        path: str,
+    ) -> sfn.TaskInput:
+        """
+        Creates a TaskInput object from JSON path.
+
+        Args:
+        - path (str): JSON path to the input data.
+
+        Returns:
+        - sfn.TaskInput: TaskInput object representing the input data.
+        """
+
+        return sfn.TaskInput.from_json_path_at(
+            path,
+        )
+
+    @staticmethod
+    def create_lambda_task_input_from_text(
+        text: str,
+    ) -> sfn.TaskInput:
+        """
+        Creates a TaskInput object from plain text.
+
+        Args:
+        - text (str): Input data as plain text.
+
+        Returns:
+        - sfn.TaskInput: TaskInput object representing the input data.
+        """
+
+        return sfn.TaskInput.from_text(
+            text,
+        )
+
+    @staticmethod
     def create_lambda_task(
         stack: Stack,
         id: str,
@@ -66,12 +120,26 @@ class StepFunctionsUtils():
         - sfn.TaskStateBase: The State to invoke the Lambda task.
         """
 
+        if "invocation_type" in kwargs:
+            if kwargs["invocation_type"] == "DRY_RUN":
+                kwargs["invocation_type"] = sfn_tasks.InvocationType.DRY_RUN
+            elif kwargs["invocation_type"] == "EVENT":
+                kwargs["invocation_type"] = sfn_tasks.InvocationType.EVENT
+            elif kwargs["invocation_type"] == "REQUEST_RESPONSE":
+                kwargs["invocation_type"] = sfn_tasks.InvocationType.REQUEST_RESPONSE
+        if "integration_pattern" in kwargs:
+            if kwargs["integration_pattern"] == "WAIT_FOR_TASK_TOKEN":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.\
+                    WAIT_FOR_TASK_TOKEN
+            elif kwargs["integration_pattern"] == "REQUEST_RESPONSE":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.REQUEST_RESPONSE
+            elif kwargs["integration_pattern"] == "RUN_JOB":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.RUN_JOB
+
         return sfn_tasks.LambdaInvoke(
             stack,
             id,
             lambda_function=lambda_function,
-            payload_response_only=True,
-            output_path="$.Payload",
             **kwargs,
         )
 
