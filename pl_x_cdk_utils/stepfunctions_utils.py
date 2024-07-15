@@ -7,6 +7,8 @@ from aws_cdk import (
     aws_lambda,
     aws_sqs,
     aws_emr,
+    aws_iam,
+    RemovalPolicy,
 )
 from aws_cdk.aws_stepfunctions_tasks import (
     EmrAddStep as eas,
@@ -109,7 +111,7 @@ class StepFunctionsUtils():
     def create_state_machine(
         stack: Stack,
         id: str,
-        definition: sfn.IChainable,
+        definition_body: sfn.DefinitionBody,
         **kwargs,
     ) -> sfn.StateMachine:
         """
@@ -118,18 +120,39 @@ class StepFunctionsUtils():
         Args:
         - stack (Stack): The stack to use.
         - id (str): The id of the State Machine.
-        - definition (sfn.IChainable): The definition of the State Machine.
+        - definition_body (sfn.DefinitionBody): The definition of the State Machine.
         - kwargs (dict): any additional props to use for the creation.
 
         Returns:
         - sfn.StateMachine: The State Machine.
         """
+        if "timeout" in kwargs:
+            kwargs["timeout"] = Duration.seconds(
+                kwargs.pop("timeout")
+            )
+        else:
+            kwargs["timeout"] = Duration.seconds(5)
+        if "state_machine_name" in kwargs:
+            kwargs["state_machine_name"] = kwargs.pop(
+                "state_machine_name"
+            )[:80]
+        else:
+            kwargs["state_machine_name"] = id[:80]
+        if "state_machine_type" in kwargs:
+            if kwargs["state_machine_type"] == "STANDARD":
+                kwargs["state_machine_type"] = sfn.StateMachineType.STANDARD
+            elif kwargs["state_machine_type"] == "EXPRESS":
+                kwargs["state_machine_type"] = sfn.StateMachineType.EXPRESS
+        if "removal_policy" in kwargs:
+            if kwargs["removal_policy"] == "DESTROY":
+                kwargs["removal_policy"] = RemovalPolicy.DESTROY
+            elif kwargs["removal_policy"] == "RETAIN":
+                kwargs["removal_policy"] = RemovalPolicy.RETAIN
 
         return sfn.StateMachine(
             stack,
             id,
-            definition=definition,
-            timeout=Duration.minutes(5),
+            definition_body=definition_body,
             **kwargs,
         )
 
