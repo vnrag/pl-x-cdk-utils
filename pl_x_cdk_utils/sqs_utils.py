@@ -108,6 +108,8 @@ class SQSUtils:
                 kwargs["encryption"] = aws_sqs.QueueEncryption.UNENCRYPTED
             elif kwargs["encryption"] == "KMS":
                 kwargs["encryption"] = aws_sqs.QueueEncryption.KMS
+        else:
+            kwargs["encryption"] = aws_sqs.QueueEncryption.UNENCRYPTED
         if "fifo_throughput_limit" in kwargs:
             if kwargs["fifo_throughput_limit"] == "PER_MESSAGE_GROUP_ID":
                 kwargs["fifo_throughput_limit"] = aws_sqs.FifoThroughputLimit.\
