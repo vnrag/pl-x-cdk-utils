@@ -19,7 +19,7 @@ from pl_x_cdk_utils.helpers import prepare_s3_path
 from pl_x_cdk_utils.logs_utils import create_log_group
 
 
-class StepFunctionUtils():
+class StepFunctionsUtils():
     @staticmethod
     def from_state_machine_arn(
         stack: Stack,
