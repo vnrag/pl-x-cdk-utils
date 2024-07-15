@@ -127,6 +127,7 @@ def configure_extended_s3_destination_property(
     convert_format_enabled=True,
     buffering_hints=None,
     error_prefix=None,
+    compression_format=None,
 ):
     """
     Property for delivery stream for s3
@@ -201,5 +202,6 @@ def configure_extended_s3_destination_property(
         role_arn=role_arn,
         processing_configuration=processing_config,
         dynamic_partitioning_configuration=dynamic_partitioning_property,
+        compression_format=compression_format,
     )
     return extended_s3_config
