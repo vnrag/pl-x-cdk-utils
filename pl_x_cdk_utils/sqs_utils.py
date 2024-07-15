@@ -133,54 +133,6 @@ class SQSUtils:
         )
 
     @staticmethod
-    def attach_dead_letter_queue(
-        queue: aws_sqs.Queue,
-        dead_letter_queue: aws_sqs.Queue,
-        **kwargs,
-    ) -> None:
-        """
-        Attaches a Dead Letter Queue to an SQS queue.
-
-        Args:
-        - queue (aws_sqs.Queue): The queue to attach the Dead Letter Queue to.
-        - dead_letter_queue (aws_sqs.Queue): The Dead Letter Queue to attach.
-        - kwargs (dict): any additional props to use for the creation of the queue.
-
-        Returns:
-        - None
-        """
-        max_receive_count = kwargs.pop(
-            "max_receive_count",
-            5,
-        )
-
-        queue.add_dead_letter_queue(
-            max_receive_count=max_receive_count,
-            queue=dead_letter_queue,
-        )
-
-    @staticmethod
-    def set_queue_attributes(
-        queue: aws_sqs.Queue,
-        attributes: dict,
-    ) -> None:
-        """
-        Sets attributes for the SQS queue.
-
-        Args:
-        - queue (aws_sqs.Queue): The queue to set attributes for.
-        - attributes (dict): A dictionary of attributes to set.
-
-        Returns:
-        - None
-        """
-        for key, value in attributes.items():
-            queue.add_override(
-                f"Properties.{key}",
-                value,
-            )
-
-    @staticmethod
     def add_lambda_trigger(
         queue: aws_sqs.Queue,
         lambda_function: aws_lambda.Function,
