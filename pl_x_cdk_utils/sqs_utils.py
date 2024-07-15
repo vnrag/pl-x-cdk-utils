@@ -111,10 +111,10 @@ class SQSUtils:
                 kwargs["encryption"] = aws_sqs.QueueEncryption.KMS
         if "fifo_throughput_limit" in kwargs:
             if kwargs["fifo_throughput_limit"] == "PER_MESSAGE_GROUP_ID":
-                kwargs["fifo_throughput_limit"] = FifoThroughputLimit.\
+                kwargs["fifo_throughput_limit"] = aws_sqs.FifoThroughputLimit.\
                     PER_MESSAGE_GROUP_ID
             elif kwargs["fifo_throughput_limit"] == "PER_QUEUE":
-                kwargs["fifo_throughput_limit"] = FifoThroughputLimit.PER_QUEUE
+                kwargs["fifo_throughput_limit"] = aws_sqs.FifoThroughputLimit.PER_QUEUE
         if "removal_policy" in kwargs:
             if kwargs["removal_policy"] == "DESTROY":
                 kwargs["removal_policy"] = RemovalPolicy.DESTROY
