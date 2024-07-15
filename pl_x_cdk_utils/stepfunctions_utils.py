@@ -108,6 +108,25 @@ class StepFunctionsUtils():
         )
 
     @staticmethod
+    def create_definition_body(
+        definition: list[sfn.TaskStateBase],
+    ) -> sfn.DefinitionBody:
+        """
+        Creates a DefinitionBody from a list of tasks.
+
+        Args:
+        - definition (list[sfn.TaskStateBase]): The list of tasks to include in the
+                                                DefinitionBody.
+
+        Returns:
+        - sfn.DefinitionBody: The DefinitionBody.
+        """
+
+        return sfn.DefinitionBody.from_chainable(
+            definition
+        )
+
+    @staticmethod
     def create_state_machine(
         stack: Stack,
         id: str,
