@@ -2,7 +2,6 @@ from aws_cdk import (
     Stack,
     Duration,
     RemovalPolicy,
-    FifoThroughputLimit,
     aws_sqs,
     aws_lambda,
     aws_lambda_event_sources,
