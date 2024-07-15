@@ -1,27 +1,28 @@
 from aws_cdk import (
-    core,
+    Stack,
+    Duration,
+    RemovalPolicy,
+    FifoThroughputLimit,
     aws_sqs,
     aws_lambda,
     aws_lambda_event_sources,
     aws_sns,
     aws_sns_subscriptions,
     aws_cloudwatch,
-    RemovalPolicy,
-    FifoThroughputLimit,
 )
 
 
 class SQSUtils:
     @staticmethod
     def get_queue_from_name(
-        stack: core.Stack,
+        stack: Stack,
         queue_name: str,
     ) -> aws_sqs.Queue:
         """
         Retrieves an existing SQS queue by its name.
 
         Args:
-        - stack (aws_cdk.core.Stack): The Stack to use.
+        - stack (aws_cdk.Stack): The Stack to use.
         - queue_name (str): The name of the queue to retrieve.
 
         Returns:
@@ -35,14 +36,14 @@ class SQSUtils:
 
     @staticmethod
     def get_queue_from_arn(
-        stack: core.Stack,
+        stack: Stack,
         queue_arn: str,
     ) -> aws_sqs.Queue:
         """
         Retrieves an existing SQS queue by its ARN.
 
         Args:
-        - stack (aws_cdk.core.Stack): The Stack to use.
+        - stack (aws_cdk.Stack): The Stack to use.
         - queue_arn (str): The ARN of the queue to retrieve.
 
         Returns:
@@ -59,7 +60,7 @@ class SQSUtils:
 
     @staticmethod
     def create_queue(
-        stack: core.Stack,
+        stack: Stack,
         name: str,
         **kwargs,
     ) -> aws_sqs.Queue:
@@ -67,7 +68,7 @@ class SQSUtils:
         Create an SQS Queue with the provided name and kwargs.
 
         Args:
-        - stack (aws_cdk.core.Stack): The Stack to use.
+        - stack (aws_cdk.Stack): The Stack to use.
         - name (str): The name of the queue.
         - kwargs (dict): any additional props to use for the creation of the queue.
 
@@ -75,23 +76,23 @@ class SQSUtils:
         - aws_sqs.Queue
         """
         if "data_key_reuse" in kwargs:
-            kwargs["data_key_reuse"] = core.Duration.seconds(
+            kwargs["data_key_reuse"] = Duration.seconds(
                 kwargs.pop("data_key_reuse")
             )
         if "delivery_delay" in kwargs:
-            kwargs["delivery_delay"] = core.Duration.seconds(
+            kwargs["delivery_delay"] = Duration.seconds(
                 kwargs.pop("delivery_delay")
             )
         if "receive_message_wait_time" in kwargs:
-            kwargs["receive_message_wait_time"] = core.Duration.seconds(
+            kwargs["receive_message_wait_time"] = Duration.seconds(
                 kwargs.pop("receive_message_wait_time")
             )
         if "visibility_timeout" in kwargs:
-            kwargs["visibility_timeout"] = core.Duration.seconds(
+            kwargs["visibility_timeout"] = Duration.seconds(
                 kwargs.pop("visibility_timeout")
             )
         if "retention_period" in kwargs:
-            kwargs["retention_period"] = core.Duration.seconds(
+            kwargs["retention_period"] = Duration.seconds(
                 kwargs.pop("retention_period")
             )
         if "deduplication_scope" in kwargs:
@@ -240,7 +241,7 @@ class SQSUtils:
 
     @staticmethod
     def add_cloudwatch_alarm(
-        stack: core.Stack,
+        stack: Stack,
         alarm_name: str,
         queue: str,
         **kwargs,
