@@ -177,6 +177,38 @@ class StepFunctionsUtils():
         )
 
     @staticmethod
+    def create_sqs_send_message_object(
+        stack: Stack,
+        id: str,
+        queue: aws_sqs.Queue,
+        message_body: dict,
+        **kwargs,
+    ) -> sfn.TaskStateBase:
+        """
+        Creates a object which sends a message to an SQS queue.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the object.
+        - queue (aws_sqs.Queue): The SQS queue to send the message to.
+        - message_body (dict): The message body to send.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.TaskStateBase: The State to send the message task.
+        """
+
+        return sfn_tasks.SqsSendMessage(
+            stack,
+            id,
+            queue=queue,
+            message_body=sfn.TaskInput.from_object(
+                message_body
+            ),
+            **kwargs,
+        )
+
+    @staticmethod
     def create_definition_body(
         definition: sfn.IChainable,
     ) -> sfn.DefinitionBody:
