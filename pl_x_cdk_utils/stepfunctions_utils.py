@@ -122,11 +122,12 @@ class StepFunctionsUtils():
 
         if "invocation_type" in kwargs:
             if kwargs["invocation_type"] == "DRY_RUN":
-                kwargs["invocation_type"] = sfn_tasks.InvocationType.DRY_RUN
+                kwargs["invocation_type"] = sfn_tasks.LambdaInvocationType.DRY_RUN
             elif kwargs["invocation_type"] == "EVENT":
-                kwargs["invocation_type"] = sfn_tasks.InvocationType.EVENT
+                kwargs["invocation_type"] = sfn_tasks.LambdaInvocationType.EVENT
             elif kwargs["invocation_type"] == "REQUEST_RESPONSE":
-                kwargs["invocation_type"] = sfn_tasks.InvocationType.REQUEST_RESPONSE
+                kwargs["invocation_type"] = sfn_tasks.LambdaInvocationType.\
+                    REQUEST_RESPONSE
         if "integration_pattern" in kwargs:
             if kwargs["integration_pattern"] == "WAIT_FOR_TASK_TOKEN":
                 kwargs["integration_pattern"] = sfn.IntegrationPattern.\
