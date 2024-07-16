@@ -197,6 +197,14 @@ class StepFunctionsUtils():
         Returns:
         - sfn.TaskStateBase: The State to send the message task.
         """
+        if "integration_pattern" in kwargs:
+            if kwargs["integration_pattern"] == "WAIT_FOR_TASK_TOKEN":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.\
+                    WAIT_FOR_TASK_TOKEN
+            elif kwargs["integration_pattern"] == "REQUEST_RESPONSE":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.REQUEST_RESPONSE
+            elif kwargs["integration_pattern"] == "RUN_JOB":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.RUN_JOB
 
         return sfn_tasks.SqsSendMessage(
             stack,
