@@ -177,14 +177,13 @@ class StepFunctionsUtils():
 
     @staticmethod
     def create_definition_body(
-        definition: list[sfn.TaskStateBase],
+        definition: sfn.IChainable,
     ) -> sfn.DefinitionBody:
         """
         Creates a DefinitionBody from a list of tasks.
 
         Args:
-        - definition (list[sfn.TaskStateBase]): The list of tasks to include in the
-                                                DefinitionBody.
+        - definition (sfn.IChainable): The list of tasks.
 
         Returns:
         - sfn.DefinitionBody: The DefinitionBody.
