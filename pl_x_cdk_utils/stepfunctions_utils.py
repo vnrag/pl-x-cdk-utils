@@ -431,7 +431,6 @@ class StepFunctionsUtils():
     def create_map_state(
         stack: Stack,
         id: str,
-        max_concurrency: int = 0,
         **kwargs,
     ) -> sfn.Map:
         """
@@ -450,7 +449,6 @@ class StepFunctionsUtils():
         return sfn.Map(
             stack,
             id,
-            max_concurrency=max_concurrency,
             **kwargs,
         )
 
