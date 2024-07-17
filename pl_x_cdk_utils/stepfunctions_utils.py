@@ -28,6 +28,18 @@ class StepFunctionsUtils():
         id: str,
         state_machine_arn: str,
     ) -> sfn.IStateMachine:
+        """
+        Return a StateMachine from its ARN.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state machine.
+        - state_machine_arn (str): The ARN of the state machine.
+
+        Returns:
+        - sfn.IStateMachine: The state machine.
+
+        """
         return sfn.StateMachine.from_state_machine_arn(
             stack,
             id,
@@ -40,6 +52,18 @@ class StepFunctionsUtils():
         id: str,
         state_machine_name: str,
     ) -> sfn.IStateMachine:
+        """
+        Return a StateMachine from its name.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state machine.
+        - state_machine_name (str): The name of the state machine.
+
+        Returns:
+        - sfn.IStateMachine: The state machine.
+        """
+
         return sfn.StateMachine.from_state_machine_name(
             stack,
             id,

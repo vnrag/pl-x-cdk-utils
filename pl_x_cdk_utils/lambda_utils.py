@@ -17,6 +17,7 @@ def implement_lambda_function(
     vpc_subnets=None,
     security_groups=[],
     log_group=None,
+    reserved_concurrent_executions=None,
 ):
     """
     Implement cdk lambda
@@ -45,6 +46,8 @@ def implement_lambda_function(
                         Environment for lambda if needed
     :param log_group: object
                       LogGroup to assign to the lambda-function
+    :param reserved_concurrent_executions: int
+                                           Maximum number of concurrent executions
     :return: object
              Lambda handler
     """
@@ -73,6 +76,7 @@ def implement_lambda_function(
         vpc_subnets=vpc_subnets,
         security_groups=security_groups,
         log_group=log_group,
+        reserved_concurrent_executions=reserved_concurrent_executions,
     )
 
     return l_handler
