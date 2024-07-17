@@ -292,8 +292,6 @@ class StepFunctionsUtils():
             kwargs["timeout"] = Duration.seconds(
                 kwargs.pop("timeout")
             )
-        else:
-            kwargs["timeout"] = Duration.seconds(5)
         if "state_machine_name" in kwargs:
             kwargs["state_machine_name"] = kwargs.pop(
                 "state_machine_name"
