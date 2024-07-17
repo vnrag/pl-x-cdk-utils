@@ -209,9 +209,9 @@ class StepFunctionsUtils():
             if kwargs["integration_pattern"] == "WAIT_FOR_TASK_TOKEN":
                 kwargs["integration_pattern"] = sfn.IntegrationPattern.\
                     WAIT_FOR_TASK_TOKEN
-                for key, value in message_body:
-                    if value == "$$.Task.Token":
-                        value = sfn.JsonPath.task_token
+                for key in message_body:
+                    if message_body[key] == "$$.Task.Token":
+                        message_body[key] = sfn.JsonPath.task_token
             elif kwargs["integration_pattern"] == "REQUEST_RESPONSE":
                 kwargs["integration_pattern"] = sfn.IntegrationPattern.REQUEST_RESPONSE
             elif kwargs["integration_pattern"] == "RUN_JOB":
