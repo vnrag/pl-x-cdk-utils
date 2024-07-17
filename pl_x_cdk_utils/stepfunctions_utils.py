@@ -145,7 +145,7 @@ class StepFunctionsUtils():
         )
 
     @staticmethod
-    def create_sqs_send_message_task(
+    def create_sqs_send_message_text_task(
         stack: Stack,
         id: str,
         queue: aws_sqs.Queue,
@@ -165,6 +165,14 @@ class StepFunctionsUtils():
         Returns:
         - sfn.TaskStateBase: The State to send the message task.
         """
+        if "integration_pattern" in kwargs:
+            if kwargs["integration_pattern"] == "WAIT_FOR_TASK_TOKEN":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.\
+                    WAIT_FOR_TASK_TOKEN
+            elif kwargs["integration_pattern"] == "REQUEST_RESPONSE":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.REQUEST_RESPONSE
+            elif kwargs["integration_pattern"] == "RUN_JOB":
+                kwargs["integration_pattern"] = sfn.IntegrationPattern.RUN_JOB
 
         return sfn_tasks.SqsSendMessage(
             stack,
@@ -177,7 +185,7 @@ class StepFunctionsUtils():
         )
 
     @staticmethod
-    def create_sqs_send_message_object(
+    def create_sqs_send_message_object_task(
         stack: Stack,
         id: str,
         queue: aws_sqs.Queue,
@@ -201,6 +209,9 @@ class StepFunctionsUtils():
             if kwargs["integration_pattern"] == "WAIT_FOR_TASK_TOKEN":
                 kwargs["integration_pattern"] = sfn.IntegrationPattern.\
                     WAIT_FOR_TASK_TOKEN
+                for key, value in message_body:
+                    if value == "$$.Task.Token":
+                        value = sfn.JsonPath.task_token
             elif kwargs["integration_pattern"] == "REQUEST_RESPONSE":
                 kwargs["integration_pattern"] = sfn.IntegrationPattern.REQUEST_RESPONSE
             elif kwargs["integration_pattern"] == "RUN_JOB":
