@@ -413,6 +413,54 @@ class StepFunctionsUtils():
             )
 
     @staticmethod
+    def create_processor_mode(
+        processor_mode: str,
+    ) -> sfn.ProcessorMode:
+        """
+        Create a ProcessorMode for a Map state.
+
+        Args:
+        - processor_mode (str): The type of processor mode ("DISTRIBUTED" or
+                                "INLINE".
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.ProcessorMode: The ProcessorMode.
+        """
+        if processor_mode == "DISTRIBUTED":
+            return sfn.ProcessorMode.DISTRIBUTED
+        elif processor_mode == "INLINE":
+            return sfn.ProcessorMode.INLINE
+        else:
+            raise ValueError(
+                f"Unsupported condition type: {processor_mode}"
+            )
+
+    @staticmethod
+    def create_processor_type(
+        processor_type: str,
+    ) -> sfn.ProcessorType:
+        """
+        Create a ProcessorType for a Map state.
+
+        Args:
+        - processor_mode (str): The type of processor mode ("EXPRESS" or
+                                "STANDARD".
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.ProcessorType: The ProcessorType.
+        """
+        if processor_type == "EXPRESS":
+            return sfn.ProcessorType.EXPRESS
+        elif processor_type == "STANDARD":
+            return sfn.ProcessorType.STANDARD
+        else:
+            raise ValueError(
+                f"Unsupported condition type: {processor_type}"
+            )
+
+    @staticmethod
     def create_emr_add_step_task(
         stack: Stack,
         id: str,
