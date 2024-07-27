@@ -23,6 +23,19 @@ from pl_x_cdk_utils.logs_utils import create_log_group
 
 class StepFunctionsUtils():
     @staticmethod
+    def get_jsonpath() -> sfn.JsonPath:
+        """
+        Returns the JsonPath class
+
+        Args:
+
+        Returns:
+        - sfn.JsonPath: The JsonPath class
+        """
+
+        return sfn.JsonPath
+
+    @staticmethod
     def from_state_machine_arn(
         stack: Stack,
         id: str,
