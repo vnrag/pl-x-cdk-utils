@@ -587,6 +587,31 @@ class StepFunctionsUtils():
         )
 
     @staticmethod
+    def create_distributed_map_state(
+        stack: Stack,
+        id: str,
+        **kwargs,
+    ) -> sfn.Map:
+        """
+        Creates a Distributed Map state.
+
+        Args:
+        - stack (Stack): The stack to use.
+        - id (str): The id of the state.
+        - max_concurrency (int): The maximum number of concurrent tasks.
+        - kwargs (dict): any additional props to use for the creation.
+
+        Returns:
+        - sfn.Map: The Map state.
+        """
+
+        return sfn.DistributedMap(
+            stack,
+            id,
+            **kwargs,
+        )
+
+    @staticmethod
     def create_pass_state(
         stack: Stack,
         id: str,
