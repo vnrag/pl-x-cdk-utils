@@ -147,14 +147,18 @@ class SQSUtils:
         Returns:
         - None
         """
-        batch_size = kwargs.pop(
+        kwargs["batch_size"] = kwargs.pop(
             "batch_size",
             10,
         )
+        if "max_batching_window" in kwargs:
+            kwargs["max_batching_window"] = Duration.seconds(
+                kwargs.pop("max_batching_window")
+            )
 
         event_source = aws_lambda_event_sources.SqsEventSource(
             queue,
-            batch_size=batch_size,
+            **kwargs,
         )
 
         lambda_function.add_event_source(
