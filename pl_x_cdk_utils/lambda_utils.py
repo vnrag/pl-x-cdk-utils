@@ -18,7 +18,7 @@ def implement_lambda_function(
     security_groups=[],
     log_group=None,
     reserved_concurrent_executions=None,
-    on_failure=None,
+    on_failure_dlq=None,
 ):
     """
     Implement cdk lambda
@@ -49,8 +49,8 @@ def implement_lambda_function(
                       LogGroup to assign to the lambda-function
     :param reserved_concurrent_executions: int
                                            Maximum number of concurrent executions
-    :param on_faillure: object
-                        Destination for failed executions    
+    :param on_faillure_dlq: object
+                            Destination for failed executions
     :return: object
              Lambda handler
     """
@@ -81,7 +81,7 @@ def implement_lambda_function(
         log_group=log_group,
         reserved_concurrent_executions=reserved_concurrent_executions,
         on_failure=aws_lambda_destinations.SqsDestination(
-            on_failure
+            on_failure_dlq
         ),
     )
 
