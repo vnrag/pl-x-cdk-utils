@@ -1,4 +1,4 @@
-from aws_cdk import Duration, aws_lambda as _lambda
+from aws_cdk import Duration, aws_lambda as _lambda, aws_lambda_destinations
 
 
 def implement_lambda_function(
@@ -18,6 +18,7 @@ def implement_lambda_function(
     security_groups=[],
     log_group=None,
     reserved_concurrent_executions=None,
+    on_failure=None,
 ):
     """
     Implement cdk lambda
@@ -48,6 +49,8 @@ def implement_lambda_function(
                       LogGroup to assign to the lambda-function
     :param reserved_concurrent_executions: int
                                            Maximum number of concurrent executions
+    :param on_faillure: object
+                        Destination for failed executions    
     :return: object
              Lambda handler
     """
@@ -77,6 +80,9 @@ def implement_lambda_function(
         security_groups=security_groups,
         log_group=log_group,
         reserved_concurrent_executions=reserved_concurrent_executions,
+        on_failure=aws_lambda_destinations.SqsDestination(
+            on_failure
+        ),
     )
 
     return l_handler
