@@ -19,6 +19,8 @@ def implement_lambda_function(
     log_group=None,
     reserved_concurrent_executions=None,
     on_failure_dlq=None,
+    retry_attempts=0,
+    max_event_age=60,
 ):
     """
     Implement cdk lambda
@@ -51,6 +53,10 @@ def implement_lambda_function(
                                            Maximum number of concurrent executions
     :param on_faillure_dlq: object
                             Destination for failed executions
+    :param retry_attempts: int
+                           Retry attempts
+    :param max_event_age: int
+                          The maximum age of a request that Lambda sends to a function for processing
     :return: object
              Lambda handler
     """
@@ -82,6 +88,10 @@ def implement_lambda_function(
         reserved_concurrent_executions=reserved_concurrent_executions,
         on_failure=aws_lambda_destinations.SqsDestination(
             on_failure_dlq
+        ),
+        retry_attempts=retry_attempts,
+        max_event_age=Duration.seconds(
+            max_event_age
         ),
     )
 
