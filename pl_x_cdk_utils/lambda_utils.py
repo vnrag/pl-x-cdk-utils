@@ -21,6 +21,7 @@ def implement_lambda_function(
     on_failure_dlq=None,
     retry_attempts=0,
     max_event_age=60,
+    architecture=_lambda.Architecture.X86_64,
 ):
     """
     Implement cdk lambda
@@ -57,6 +58,8 @@ def implement_lambda_function(
                            Retry attempts
     :param max_event_age: int
                           The maximum age of a request that Lambda sends to a function for processing
+    :param architecture: object
+                         Lambda architecture
     :return: object
              Lambda handler
     """
@@ -65,6 +68,7 @@ def implement_lambda_function(
     memory_size = memory_size if memory_size else 128
     timeout = timeout if timeout else 5
     runtime = runtime if runtime else _lambda.Runtime.PYTHON_3_8
+    architecture = _lambda.Architecture.ARM_64 if architecture == "ARM_64" else _lambda.Architecture.X86_64
     l_handler = _lambda.Function(
         construct,
         param_id,
@@ -93,6 +97,7 @@ def implement_lambda_function(
         max_event_age=Duration.seconds(
             max_event_age
         ),
+        architecture=architecture,
     )
 
     return l_handler
