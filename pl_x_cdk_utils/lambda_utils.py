@@ -92,7 +92,7 @@ def implement_lambda_function(
         reserved_concurrent_executions=reserved_concurrent_executions,
         on_failure=aws_lambda_destinations.SqsDestination(
             on_failure_dlq
-        ),
+        ) if on_failure_dlq else None,
         retry_attempts=retry_attempts,
         max_event_age=Duration.seconds(
             max_event_age
