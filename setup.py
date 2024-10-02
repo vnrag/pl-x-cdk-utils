@@ -11,7 +11,7 @@ REQUIRES_PYTHON = ">=3.8.0"
 # Packages required
 REQUIRED = [
         "boto3",
-        "aws-cdk-lib==2.21.1",
+        "aws-cdk-lib",
         "constructs>=10.0.0,<11.0.0",
         "aws_cdk.aws_glue_alpha",
         ]
