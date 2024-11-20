@@ -877,8 +877,8 @@ def create_sfn_tasks_emr_cluster(
                 )
                 for conf in cluster_config["configurations"]
             ]
-            if cluster_config["configurations"]
-            else []
+            if "configurations" in cluster_config and cluster_config[
+                "configurations"] else []
         ),
         tags=cluster_config["tags"],
         visible_to_all_users=True,
