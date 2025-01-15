@@ -71,7 +71,7 @@ def retrieve_ssm_string_parameter_value(
         if parameter
         else ssm.StringParameter.from_string_parameter_attributes(
             construct,
-            f"profile-for-ssm-retrieve-{parameter_name}",
+            param_id,
             parameter_name=parameter_name,
         ).string_value
     )
