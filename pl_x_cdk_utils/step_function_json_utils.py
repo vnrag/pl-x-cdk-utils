@@ -54,6 +54,7 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         "apps": [{"Name": "Hadoop"}, {"Name": "Spark"}],
         "instance": "m5.xlarge",
         "spot_capacity": 4,
+        "ebs_root_volume": 10,
         "fleet_config": [
             {
                 "InstanceType": "m5.xlarge",
@@ -85,6 +86,8 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         default_cluster_configs["apps"]
     instance = config["instance"] if "instance" in config else\
         default_cluster_configs["instance"]
+    ebs_root_volume = config["ebs_root_volume"] if "ebs_root_volume" in config else\
+        default_cluster_configs["ebs_root_volume"]
     spot_capacity = config["spot_capacity"] if "spot_capacity" in config else \
         default_cluster_configs["spot_capacity"]
     task_on_demand = config["task_on_demand"] if "task_on_demand" in config \
@@ -180,7 +183,7 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
             ],
             "JobFlowRole": "EMR_EC2_DefaultRole",
             "ServiceRole": "EMR_DefaultRole",
-            "EbsRootVolumeSize": 10,
+            "EbsRootVolumeSize": ebs_root_volume,
             "ScaleDownBehavior": "TERMINATE_AT_TASK_COMPLETION",
             "VisibleToAllUsers": True
         },
