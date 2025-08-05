@@ -33,13 +33,24 @@ def get_default_vpc(construct):
                 Stack Scope
 
     """
-    vpc = ec2.Vpc.from_lookup(
-        construct,
-        "default-vpc",
-        is_default=True,
-        vpc_name="default"
-    )
-    return vpc
+    try:
+        # First try to get the default VPC
+        vpc = ec2.Vpc.from_lookup(
+            construct,
+            "default-vpc",
+            is_default=True,
+        )
+        return vpc
+    except Exception:
+        # If default VPC doesn't exist, create a new VPC
+        # This is a fallback for accounts where default VPC was deleted
+        vpc = ec2.Vpc(
+            construct,
+            "new-vpc",
+            max_azs=2,
+            nat_gateways=1,
+        )
+        return vpc
 
 
 def get_subnets(construct, vpc_id, subnet_type="public"):
