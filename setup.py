@@ -5,7 +5,7 @@ NAME = "pl_x_cdk_utils"
 DESCRIPTION = "Public VNR package with AWS-CDK built in functions and " \
               "boto3 helpers"
 URL = "https://github.com/vnrag/pl-x-cdk-utils"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 REQUIRES_PYTHON = ">=3.8.0"
 
 # Packages required
