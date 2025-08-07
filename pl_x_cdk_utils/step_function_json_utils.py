@@ -99,7 +99,8 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
                                                      in config else 10
     emr_version = config['emr_version'] if 'emr_version' in config else \
         "emr-6.2.0"
-    ec2_subnet = config['ec2_subnet']
+    ec2_subnet = config.get('ec2_subnet', None)
+    ec2_subnets = config.get('ec2_subnets', None)
     emr_slave_security = config['emr_slave_security']
     emr_master_security = config['emr_master_security']
     emr_service_access = config['emr_service_access'] if \
@@ -168,15 +169,14 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
                     ],
                     "KeepJobFlowAliveWhenNoSteps": True,
                     "TerminationProtected": False,
-                    "Ec2SubnetId": ec2_subnet,
                     "EmrManagedSlaveSecurityGroup": emr_slave_security,
                     "EmrManagedMasterSecurityGroup": emr_master_security
                 },
             "BootstrapActions": [
-                    {
-                        "Name": "Install external libraries",
-                        "ScriptBootstrapAction": {}
-                    }
+                {
+                    "Name": "Install external libraries",
+                    "ScriptBootstrapAction": {}
+                }
             ],
             "JobFlowRole": "EMR_EC2_DefaultRole",
             "ServiceRole": "EMR_DefaultRole",
@@ -186,6 +186,12 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         },
         "ResultPath": "$.cluster"
     }
+
+    if ec2_subnet:
+        cluster_json['Parameters']['Instances']['Ec2SubnetId'] = ec2_subnet
+    if ec2_subnets:
+        cluster_json['Parameters']['Instances']['Ec2SubnetIds'] = ec2_subnets
+
     if scaling:
         cluster_json['Parameters']['ManagedScalingPolicy'] = scaling_policy
     if emr_service_access:
