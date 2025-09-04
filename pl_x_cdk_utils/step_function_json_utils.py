@@ -195,6 +195,11 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         cluster_json['Next'] = next_state
     else:
         cluster_json['End'] = True
+
+    configurations = config.get("configurations", [])
+    if configurations:
+        cluster_json["Parameters"]["Configurations"] = configurations
+
     if input_params:
         cluster_json["InputPath"] = "$"
         cluster_json["Parameters"]["Name"] = input_params["cluster_name"]
