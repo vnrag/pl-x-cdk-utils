@@ -130,57 +130,51 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         "Type": "Task",
         "Resource": "arn:aws:states:::elasticmapreduce:createCluster.sync",
         "Parameters": {
-                "ReleaseLabel": emr_version,
-                "StepConcurrencyLevel": step_concurrency,
-                "Tags": tags,
-                "Applications": apps,
-                "Instances": {
-                    "InstanceFleets": [
-                        {
-                            "InstanceFleetType": "MASTER",
-                            "Name": "MASTER_NODE",
-                            "TargetOnDemandCapacity": 1,
-                            "InstanceTypeConfigs": master_instance_config
+            "ReleaseLabel": emr_version,
+            "StepConcurrencyLevel": step_concurrency,
+            "Tags": tags,
+            "Applications": apps,
+            "Instances": {
+                "InstanceFleets": [
+                    {
+                        "InstanceFleetType": "MASTER",
+                        "Name": "MASTER_NODE",
+                        "TargetOnDemandCapacity": 1,
+                        "InstanceTypeConfigs": master_instance_config
+                    },
+                    {
+                        "InstanceFleetType": "CORE",
+                        "Name": "CORE_NODE",
+                        core_on_demand_key: core_on_demand_val,
+                        "InstanceTypeConfigs": core_instance_config
+                    },
+                    {
+                        "InstanceFleetType": "TASK",
+                        "Name": "TASK_NODES",
+                        task_spot_key: task_spot_val,
+                        task_on_demand_key: task_on_demand_val,
+                        "LaunchSpecifications": {
+                            "SpotSpecification": {
+                                "TimeoutDurationMinutes": 180,
+                                "TimeoutAction": "TERMINATE_CLUSTER"
+                            }
                         },
-                        {
-                            "InstanceFleetType": "CORE",
-                            "Name": "CORE_NODE",
-                            core_on_demand_key: core_on_demand_val,
-                            "InstanceTypeConfigs": core_instance_config
+                        "ResizeSpecifications": {
+                            "SpotResizeSpecification": {
+                                "TimeoutDurationMinutes": 120
+                            }
                         },
-                        {
-                            "InstanceFleetType": "TASK",
-                            "Name": "TASK_NODES",
-                            task_spot_key: task_spot_val,
-                            task_on_demand_key: task_on_demand_val,
-                            "LaunchSpecifications": {
-                                "SpotSpecification": {
-                                    "TimeoutDurationMinutes": 180,
-                                    "TimeoutAction": "TERMINATE_CLUSTER"
-                                }
-                            },
-                            "ResizeSpecifications": {
-                                "SpotResizeSpecification": {
-                                    "TimeoutDurationMinutes": 120
-                                }
-                            },
-                            instance_type_config_key: instance_type_config_val,
-                        }
-                    ],
-                    "KeepJobFlowAliveWhenNoSteps": True,
-                    "TerminationProtected": False,
-                    "EmrManagedSlaveSecurityGroup": emr_slave_security,
-                    "EmrManagedMasterSecurityGroup": emr_master_security
-                },
-            "BootstrapActions": [
-                {
-                    "Name": "Install external libraries",
-                    "ScriptBootstrapAction": {}
-                }
-            ],
+                        instance_type_config_key: instance_type_config_val,
+                    }
+                ],
+                "KeepJobFlowAliveWhenNoSteps": True,
+                "TerminationProtected": False,
+                "EmrManagedSlaveSecurityGroup": emr_slave_security,
+                "EmrManagedMasterSecurityGroup": emr_master_security
+            },
             "JobFlowRole": "EMR_EC2_DefaultRole",
             "ServiceRole": "EMR_DefaultRole",
-            "EbsRootVolumeSize": 10,
+            "EbsRootVolumeSize": 15,
             "ScaleDownBehavior": "TERMINATE_AT_TASK_COMPLETION",
             "VisibleToAllUsers": True
         },
@@ -211,9 +205,14 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         cluster_json["Parameters"]["Name"] = input_params["cluster_name"]
         cluster_json["Parameters"]["LogUri"] = input_params["log_uri"]
         if "bootstrap_script" in input_params:
-            cluster_json["Parameters"]["BootstrapActions"][0][
-                "ScriptBootstrapAction"]["Path"] = \
-                input_params["bootstrap_script"]
+            cluster_json["Parameters"]["BootstrapActions"] = [
+                {
+                    "Name": "Install external libraries",
+                    "ScriptBootstrapAction": {
+                        "Path": input_params["bootstrap_script"]
+                    }
+                }
+            ]
     else:
         cluster_json["InputPath"] = "$.emr_cluster_params"
         cluster_json["Parameters"]["Name.$"] = "$.cluster_name"
