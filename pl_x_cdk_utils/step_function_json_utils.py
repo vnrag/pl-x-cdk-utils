@@ -210,9 +210,10 @@ def get_cluster_start_json(next_state=None, input_params={}, config={},
         cluster_json["InputPath"] = "$"
         cluster_json["Parameters"]["Name"] = input_params["cluster_name"]
         cluster_json["Parameters"]["LogUri"] = input_params["log_uri"]
-        cluster_json["Parameters"]["BootstrapActions"][0][
-            "ScriptBootstrapAction"]["Path"] = \
-            input_params["bootstrap_script"]
+        if "bootstrap_script" in input_params:
+            cluster_json["Parameters"]["BootstrapActions"][0][
+                "ScriptBootstrapAction"]["Path"] = \
+                input_params["bootstrap_script"]
     else:
         cluster_json["InputPath"] = "$.emr_cluster_params"
         cluster_json["Parameters"]["Name.$"] = "$.cluster_name"
